@@ -1,0 +1,12 @@
+{
+  "projects": {
+    "default": "fbproject-c27b4"
+  },
+  "targets": {},
+  "etags": {
+    "fbproject-c27b4": {
+      "extensionInstances": {}
+    }
+  },
+  "dataconnectEmulatorConfig": {}
+}
