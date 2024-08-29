@@ -27,9 +27,8 @@ jobs:
         run: npm run build
 
       - name: Deploy to Firebase
-        run: |
-          cd ./rival
-          npx firebase deploy --only hosting
+        working-directory: ./rival
+        run: npx firebase deploy --only hosting
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
