@@ -10,12 +10,26 @@ jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: npm ci && npm run build
-        working-directory: ./rival
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
         with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FBPROJECT_C27B4 }}
+          node-version: '16'  # or the version your project uses
+
+      - name: Install dependencies
+        working-directory: ./rival
+        run: npm ci
+
+      - name: Build project
+        working-directory: ./rival
+        run: npm run build
+
+      - name: Deploy to Firebase
+        working-directory: ./rival
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
           channelId: live
-          projectId: fbproject-c27b4
