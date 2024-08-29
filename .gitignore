@@ -170,9 +170,6 @@ temp/
 # Grunt files
 .grunt
 
-# npm package-lock file
-package-lock.json
-
 # Yarn lock file
 yarn.lock
 
