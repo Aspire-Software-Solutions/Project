@@ -187,7 +187,7 @@
             contentArea.innerHTML = '';  // Clear previous content
 
             items.forEach(item => {
-                const { firstname, lastname, followersCount, followingCount } = item.data;
+                const { firstname, lastname, handle, followersCount, followingCount, quickieCount, avatarUrl, bio, coverPhoto } = item.data;
 
                 const col = document.createElement('div');
                 col.className = 'col-12 col-md-6 mb-4';
@@ -195,20 +195,49 @@
                 const card = document.createElement('div');
                 card.className = 'card';
 
-                // Card Header
+                // Card Cover Photo
+                if (coverPhoto) {
+                    const coverPhotoDiv = document.createElement('div');
+                    coverPhotoDiv.className = 'card-img-top';
+                    coverPhotoDiv.style.height = '150px';
+                    coverPhotoDiv.style.backgroundImage = `url(${coverPhoto})`;
+                    coverPhotoDiv.style.backgroundSize = 'cover';
+                    coverPhotoDiv.style.backgroundPosition = 'center';
+                    card.appendChild(coverPhotoDiv);
+                }
+
+                // Card Header with Avatar, Name, and Handle
                 const cardHeader = document.createElement('div');
                 cardHeader.className = 'card-header d-flex align-items-center';
-                const avatar = document.createElement('div');
-                avatar.className = 'avatar rounded-circle bg-secondary text-white d-flex justify-content-center align-items-center me-3';
-                avatar.textContent = firstname ? firstname.charAt(0).toUpperCase() : 'U';
+
+                // Avatar
+                const avatar = document.createElement('img');
+                avatar.className = 'rounded-circle me-3';
+                avatar.src = avatarUrl || 'https://via.placeholder.com/50';
+                avatar.alt = 'Avatar';
+                avatar.style.width = '50px';
+                avatar.style.height = '50px';
+
+                const fullNameAndHandle = document.createElement('div');
                 const fullName = document.createElement('strong');
                 fullName.textContent = `${firstname || 'Unknown'} ${lastname || 'User'}`;
+                const handleSpan = document.createElement('span');
+                handleSpan.textContent = ` @${handle || 'handle'}`;
+                handleSpan.className = 'text-muted ms-2';
+
+                fullNameAndHandle.appendChild(fullName);
+                fullNameAndHandle.appendChild(handleSpan);
+
                 cardHeader.appendChild(avatar);
-                cardHeader.appendChild(fullName);
+                cardHeader.appendChild(fullNameAndHandle);
 
                 // Card Body
                 const cardBody = document.createElement('div');
                 cardBody.className = 'card-body';
+
+                const bioParagraph = document.createElement('p');
+                bioParagraph.textContent = bio || 'No bio available';
+                bioParagraph.className = 'text-muted';
 
                 const followers = document.createElement('p');
                 followers.textContent = `Followers: ${followersCount || 0}`;
@@ -216,9 +245,13 @@
                 const following = document.createElement('p');
                 following.textContent = `Following: ${followingCount || 0}`;
 
+                const quickies = document.createElement('p');
+                quickies.textContent = `Quickies: ${quickieCount || 0}`;
 
+                cardBody.appendChild(bioParagraph);
                 cardBody.appendChild(followers);
                 cardBody.appendChild(following);
+                cardBody.appendChild(quickies);
 
                 // Assemble the card
                 card.appendChild(cardHeader);
@@ -228,6 +261,8 @@
                 contentArea.appendChild(col);
             });
         }
+
+
 
         // Infinite scroll for lazy loading
         window.addEventListener('scroll', () => {
