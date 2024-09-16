@@ -187,7 +187,7 @@
             contentArea.innerHTML = '';  // Clear previous content
 
             items.forEach(item => {
-                const { firstname, lastname, followersCount, followingCount, quickieCount } = item.data;
+                const { firstname, lastname, followersCount, followingCount } = item.data;
 
                 const col = document.createElement('div');
                 col.className = 'col-12 col-md-6 mb-4';
@@ -216,12 +216,9 @@
                 const following = document.createElement('p');
                 following.textContent = `Following: ${followingCount || 0}`;
 
-                const quickies = document.createElement('p');
-                quickies.textContent = `Quickies: ${quickieCount || 0}`;
 
                 cardBody.appendChild(followers);
                 cardBody.appendChild(following);
-                cardBody.appendChild(quickies);
 
                 // Assemble the card
                 card.appendChild(cardHeader);
