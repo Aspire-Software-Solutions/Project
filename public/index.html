@@ -152,9 +152,9 @@
             let q;
 
             if (lastVisible) {
-                q = query(collRef, orderBy('timestamp', 'desc'), startAfter(lastVisible), limit(10));
+                q = query(collRef, orderBy('createdAt', 'desc'), startAfter(lastVisible), limit(10));
             } else {
-                q = query(collRef, orderBy('timestamp', 'desc'), limit(10));
+                q = query(collRef, orderBy('createdAt', 'desc'), limit(10));
             }
 
             try {
@@ -169,10 +169,10 @@
                     lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
                     displayData(items, collectionName);
                 } else if (reset) {
-                    contentArea.innerHTML = '<p class="text-center">No data available.</p>';
+                    contentArea.innerHTML = '<p class="text-center">No profiles available.</p>';
                 }
             } catch (error) {
-                console.error("Error fetching data:", error);
+                console.error("Error fetching profiles:", error);
                 displayErrorMessage(`Error: ${error.message}`);
             } finally {
                 isFetching = false;
@@ -184,10 +184,13 @@
         // Display data in an elegant format
         function displayData(items, collectionName) {
             const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = '';  // Clear previous content
 
             items.forEach(item => {
+                const { firstname, lastname, followersCount, followingCount, quickieCount } = item.data;
+
                 const col = document.createElement('div');
-                col.className = 'col-12 mb-4';
+                col.className = 'col-12 col-md-6 mb-4';
 
                 const card = document.createElement('div');
                 card.className = 'card';
@@ -197,37 +200,32 @@
                 cardHeader.className = 'card-header d-flex align-items-center';
                 const avatar = document.createElement('div');
                 avatar.className = 'avatar rounded-circle bg-secondary text-white d-flex justify-content-center align-items-center me-3';
-                avatar.textContent = item.data.username ? item.data.username.charAt(0).toUpperCase() : 'U';
-                const username = document.createElement('strong');
-                username.textContent = item.data.username || 'Unknown User';
+                avatar.textContent = firstname ? firstname.charAt(0).toUpperCase() : 'U';
+                const fullName = document.createElement('strong');
+                fullName.textContent = `${firstname || 'Unknown'} ${lastname || 'User'}`;
                 cardHeader.appendChild(avatar);
-                cardHeader.appendChild(username);
+                cardHeader.appendChild(fullName);
 
                 // Card Body
                 const cardBody = document.createElement('div');
                 cardBody.className = 'card-body';
-                const content = document.createElement('p');
-                content.textContent = item.data.content || 'No content available.';
-                cardBody.appendChild(content);
 
-                // Image (if any)
-                if (item.data.imageUrl) {
-                    const image = document.createElement('img');
-                    image.src = item.data.imageUrl;
-                    image.className = 'img-fluid rounded';
-                    cardBody.appendChild(image);
-                }
+                const followers = document.createElement('p');
+                followers.textContent = `Followers: ${followersCount || 0}`;
 
-                // Card Footer
-                const cardFooter = document.createElement('div');
-                cardFooter.className = 'card-footer text-muted';
-                const timestamp = item.data.timestamp ? new Date(item.data.timestamp.toDate()).toLocaleString() : '';
-                cardFooter.textContent = `Posted on ${timestamp}`;
+                const following = document.createElement('p');
+                following.textContent = `Following: ${followingCount || 0}`;
 
-                // Assemble card
+                const quickies = document.createElement('p');
+                quickies.textContent = `Quickies: ${quickieCount || 0}`;
+
+                cardBody.appendChild(followers);
+                cardBody.appendChild(following);
+                cardBody.appendChild(quickies);
+
+                // Assemble the card
                 card.appendChild(cardHeader);
                 card.appendChild(cardBody);
-                card.appendChild(cardFooter);
                 col.appendChild(card);
 
                 contentArea.appendChild(col);
@@ -246,16 +244,29 @@
 
         // Initialize event listeners on window load
         window.onload = function() {
+            const authModal = new bootstrap.Modal(document.getElementById('authModal'));
 
-            // Check if element exists before adding event listener
-            const updateDataElement = document.getElementById('updateData');
-            if (updateDataElement) {
-                updateDataElement.addEventListener('click', updateUserData);
-            }
-            
+            // Authentication state observer
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    console.log('User is signed in:', currentUser);
+                    // Hide the modal if user is signed in
+                    bootstrap.Modal.getInstance(document.getElementById('authModal')).hide();
+                    fetchUserData();
+                } else {
+                    console.log('No user is signed in');
+                    // Show the modal only if no user is signed in
+                    const authModalInstance = new bootstrap.Modal(document.getElementById('authModal'), {
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                    authModalInstance.show();
+                }
+            });
+
             document.getElementById('registerUser').addEventListener('click', registerUser);
             document.getElementById('signInUser').addEventListener('click', signInUser);
-            document.getElementById('updateData').addEventListener('click', updateUserData);
 
             // Section buttons
             const buttons = document.querySelectorAll('.section-button');
@@ -270,23 +281,8 @@
                     loadData(button.dataset.collection);
                 });
             });
-
-            // Authentication state observer
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    currentUser = user;
-                    console.log('User is signed in:', currentUser);
-                    fetchUserData();
-                } else {
-                    console.log('No user is signed in');
-                    const authModal = new bootstrap.Modal(document.getElementById('authModal'), {
-                        backdrop: 'static',
-                        keyboard: false
-                    });
-                    authModal.show();
-                }
-            });
         };
+
 
     </script>
 
@@ -330,10 +326,7 @@
 
         <!-- Section Buttons -->
         <div class="d-flex justify-content-center my-4">
-            <button class="btn btn-outline-primary mx-2 section-button" data-collection="notifications">Notifications</button>
             <button class="btn btn-outline-secondary mx-2 section-button" data-collection="profiles">Profiles</button>
-            <button class="btn btn-outline-success mx-2 section-button" data-collection="quickies">Quickies</button>
-            <button class="btn btn-outline-danger mx-2 section-button" data-collection="users">Users</button>
         </div>
 
         <!-- Content Display Area -->
