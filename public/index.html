@@ -314,7 +314,18 @@
             }
 
             items.forEach(item => {
-                const { userName, handle, text, mediaUrl, likesCount, commentsCount } = item.data;
+                const { userName, handle, text, mediaUrl, likesCount, commentsCount, createdAt } = item.data;
+
+                // Format createdAt as dd Month yyyy
+                let formattedDate = 'Unknown Date';
+                if (createdAt && createdAt.toDate) {
+                    const date = createdAt.toDate();
+                    formattedDate = date.toLocaleDateString('en-GB', {
+                        day: '2-digit',
+                        month: 'short', // 'short' gives abbreviated month names (e.g., Jan, Feb)
+                        year: 'numeric',
+                    });
+                }
 
                 // Create card container
                 const col = document.createElement('div');
@@ -323,9 +334,9 @@
                 const card = document.createElement('div');
                 card.className = 'card shadow-sm';
 
-                // Card Header - Username and Handle
+                // Card Header - Username, Handle, and Date
                 const cardHeader = document.createElement('div');
-                cardHeader.className = 'card-header d-flex align-items-center';
+                cardHeader.className = 'card-header d-flex justify-content-between align-items-center';
 
                 const userInfo = document.createElement('div');
                 const userNameElement = document.createElement('strong');
@@ -335,10 +346,14 @@
                 handleElement.textContent = ` @${handle || 'handle'}`;
                 handleElement.className = 'text-muted ms-2';
 
+                const dateElement = document.createElement('span');
+                dateElement.textContent = formattedDate;
+                dateElement.className = 'text-muted';
+
                 userInfo.appendChild(userNameElement);
                 userInfo.appendChild(handleElement);
-
                 cardHeader.appendChild(userInfo);
+                cardHeader.appendChild(dateElement);
 
                 // Card Body - Media (if available) or Text
                 const cardBody = document.createElement('div');
@@ -382,6 +397,7 @@
                 contentArea.appendChild(col);
             });
         }
+
 
     
     // Fetch quickies from Firestore
