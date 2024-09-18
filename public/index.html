@@ -96,45 +96,6 @@
             }
         }
 
-        // Fetch user data from Firestore and display in table
-        async function fetchUserData() {
-            try {
-                const docRef = doc(db, 'users', currentUser.uid);
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    document.getElementById('name').textContent = data.name || '';
-                    document.getElementById('age').textContent = data.age || '';
-                    document.getElementById('weight').textContent = data.weight || '';
-                } else {
-                    console.log("No such document!");
-                }
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            }
-        }
-
-        // Update user data in Firestore
-        async function updateUserData() {
-            const name = document.getElementById('name').textContent;
-            const age = document.getElementById('age').textContent;
-            const weight = document.getElementById('weight').textContent;
-
-            try {
-                await updateDoc(doc(db, 'users', currentUser.uid), {
-                    name: name,
-                    age: age,
-                    weight: weight
-                });
-
-                alert("User data updated successfully!");
-            } catch (error) {
-                console.error("Error updating data:", error);
-            }
-        }
-
-        // Load data from Firestore with lazy loading
         async function loadData(collectionName, reset = true) {
             if (isFetching) return;
             isFetching = true;
@@ -151,13 +112,16 @@
             const collRef = collection(db, collectionName);
             let q;
 
-            if (lastVisible) {
-                q = query(collRef, orderBy('createdAt', 'desc'), startAfter(lastVisible), limit(10));
-            } else {
-                q = query(collRef, orderBy('createdAt', 'desc'), limit(10));
-            }
-
             try {
+                // Fetch profiles without order if profiles don't have createdAt
+                if (collectionName === 'profiles') {
+                    q = query(collRef, limit(10)); // No 'orderBy' if profiles don't have createdAt
+                } else if (lastVisible) {
+                    q = query(collRef, orderBy('createdAt', 'desc'), startAfter(lastVisible), limit(10));
+                } else {
+                    q = query(collRef, orderBy('createdAt', 'desc'), limit(10));
+                }
+
                 const querySnapshot = await getDocs(q);
                 let items = [];
 
@@ -165,18 +129,22 @@
                     items.push({ id: doc.id, data: doc.data() });
                 });
 
+                // Log the items to verify the data
+                console.log("Fetched items:", items);
+
                 if (items.length > 0) {
                     lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
-                    displayData(items, collectionName);
+                    return items;  // Return the fetched items
                 } else if (reset) {
                     contentArea.innerHTML = '<p class="text-center">No profiles available.</p>';
+                    return [];
                 }
             } catch (error) {
-                console.error("Error fetching profiles:", error);
-                displayErrorMessage(`Error: ${error.message}`);
+                console.error("Error fetching data:", error);
+                contentArea.innerHTML = `<p class="text-center">Error fetching ${collectionName}: ${error.message}</p>`;
+                return [];
             } finally {
                 isFetching = false;
-                // Hide the loading spinner
                 document.getElementById('loadingSpinner').style.display = 'none';
             }
         }
@@ -185,6 +153,12 @@
         function displayData(items, collectionName) {
             const contentArea = document.getElementById('contentArea');
             contentArea.innerHTML = '';  // Clear previous content
+
+            // Check if items is an array and has data
+            if (!items || items.length === 0) {
+                contentArea.innerHTML = '<p class="text-center">No profiles available.</p>';
+                return;
+            }
 
             items.forEach(item => {
                 const { firstname, lastname, handle, followersCount, followingCount, quickieCount, avatarUrl, bio, coverPhoto } = item.data;
@@ -210,7 +184,6 @@
                 const cardHeader = document.createElement('div');
                 cardHeader.className = 'card-header d-flex align-items-center';
 
-                // Avatar
                 const avatar = document.createElement('img');
                 avatar.className = 'rounded-circle me-3';
                 avatar.src = avatarUrl || 'https://via.placeholder.com/50';
@@ -264,7 +237,10 @@
 
 
 
+
         // Infinite scroll for lazy loading
+        // Must fix so it works for ALL BUTTONS
+        /*
         window.addEventListener('scroll', () => {
             if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500 && !isFetching) {
                 const activeButton = document.querySelector('.btn.active');
@@ -273,6 +249,7 @@
                 }
             }
         });
+        */
 
         // Initialize event listeners on window load
         window.onload = function() {
@@ -285,7 +262,6 @@
                     console.log('User is signed in:', currentUser);
                     // Hide the modal if user is signed in
                     bootstrap.Modal.getInstance(document.getElementById('authModal')).hide();
-                    fetchUserData();
                 } else {
                     console.log('No user is signed in');
                     // Show the modal only if no user is signed in
@@ -300,21 +276,149 @@
             document.getElementById('registerUser').addEventListener('click', registerUser);
             document.getElementById('signInUser').addEventListener('click', signInUser);
 
-            // Section buttons
             const buttons = document.querySelectorAll('.section-button');
 
             buttons.forEach(button => {
-                button.addEventListener('click', () => {
+                button.addEventListener('click', async () => {
                     // Remove active class from all buttons
                     buttons.forEach(btn => btn.classList.remove('active'));
                     // Add active class to the clicked button
                     button.classList.add('active');
-                    // Load data
-                    loadData(button.dataset.collection);
+
+                    // Check which section is clicked and load the appropriate data
+                    const collectionName = button.dataset.collection;
+                    if (collectionName === 'profiles') {
+                        // Fetch and display Profiles
+                        const profiles = await loadData('profiles');
+                        displayData(profiles, 'profiles');  // Use displayData for profiles
+                    } else if (collectionName === 'quickies') {
+                        // Fetch and display Quickies (Posts)
+                        const quickiesCollection = await loadQuickies();
+                        displayQuickiesData(quickiesCollection);  // Use displayQuickiesData for posts
+                    }
+                    // For notifications and other sections, add similar logic here.
                 });
             });
         };
 
+
+        // Fetch and display "quickies" data when the Posts button is clicked
+        async function displayQuickiesData(items) {
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = '';  // Clear previous content
+
+            // Check if items is defined and has data
+            if (!items || items.length === 0) {
+                contentArea.innerHTML = '<p class="text-center">No posts available.</p>';
+                return;
+            }
+
+            items.forEach(item => {
+                const { userName, handle, text, mediaUrl, likesCount, commentsCount } = item.data;
+
+                // Create card container
+                const col = document.createElement('div');
+                col.className = 'col-12 col-md-6 mb-4';
+
+                const card = document.createElement('div');
+                card.className = 'card shadow-sm';
+
+                // Card Header - Username and Handle
+                const cardHeader = document.createElement('div');
+                cardHeader.className = 'card-header d-flex align-items-center';
+
+                const userInfo = document.createElement('div');
+                const userNameElement = document.createElement('strong');
+                userNameElement.textContent = userName || 'Unknown User';
+
+                const handleElement = document.createElement('span');
+                handleElement.textContent = ` @${handle || 'handle'}`;
+                handleElement.className = 'text-muted ms-2';
+
+                userInfo.appendChild(userNameElement);
+                userInfo.appendChild(handleElement);
+
+                cardHeader.appendChild(userInfo);
+
+                // Card Body - Media (if available) or Text
+                const cardBody = document.createElement('div');
+                cardBody.className = 'card-body';
+
+                if (mediaUrl) {
+                    const media = document.createElement('img');
+                    media.src = mediaUrl;
+                    media.className = 'card-img-top mb-3';
+                    media.style.maxHeight = '300px';
+                    media.style.objectFit = 'cover';
+                    cardBody.appendChild(media);
+                } else {
+                    const postText = document.createElement('p');
+                    postText.textContent = text || 'No text available.';
+                    cardBody.appendChild(postText);
+                }
+
+                // Card Footer - Likes and Comments
+                const cardFooter = document.createElement('div');
+                cardFooter.className = 'card-footer d-flex justify-content-between align-items-center';
+
+                const likes = document.createElement('span');
+                likes.className = 'text-muted';
+                likes.textContent = `Likes: ${likesCount || 0}`;
+
+                const comments = document.createElement('span');
+                comments.className = 'text-muted';
+                comments.textContent = `Comments: ${commentsCount || 0}`;
+
+                cardFooter.appendChild(likes);
+                cardFooter.appendChild(comments);
+
+                // Assemble the card
+                card.appendChild(cardHeader);
+                card.appendChild(cardBody);
+                card.appendChild(cardFooter);
+                col.appendChild(card);
+
+                // Append card to content area
+                contentArea.appendChild(col);
+            });
+        }
+
+    
+    // Fetch quickies from Firestore
+    async function loadQuickies() {
+        try {
+            const quickiesRef = collection(db, 'quickies');
+            const quickiesSnapshot = await getDocs(quickiesRef);
+
+            // Check if we received any documents
+            if (quickiesSnapshot.empty) {
+                console.log("No quickies available.");
+                return [];
+            }
+
+            console.log("BELOW ARE THE QUICKIES")
+            console.log(quickiesSnapshot)
+
+            let quickies = [];
+            quickiesSnapshot.forEach((doc) => {
+                quickies.push({
+                    id: doc.id,
+                    data: doc.data()
+                });
+            });
+
+            return quickies;
+        } catch (error) {
+            console.error("Error fetching quickies:", error);
+            return [];  // Return empty array in case of error
+        }
+    }
+
+    // Sample function call - you can replace `items` with actual data fetched from Firestore
+    document.querySelector('.section-button[data-collection="quickies"]').addEventListener('click', async function() {
+        const quickiesCollection = await loadQuickies();
+        displayQuickiesData(quickiesCollection);
+    });
 
     </script>
 
@@ -359,6 +463,9 @@
         <!-- Section Buttons -->
         <div class="d-flex justify-content-center my-4">
             <button class="btn btn-outline-secondary mx-2 section-button" data-collection="profiles">Profiles</button>
+            <button class="btn btn-outline-secondary mx-2 section-button" data-collection="notifications">Notifications</button>
+            <button class="btn btn-outline-secondary mx-2 section-button" data-collection="quickies">Posts</button>
+
         </div>
 
         <!-- Content Display Area -->
