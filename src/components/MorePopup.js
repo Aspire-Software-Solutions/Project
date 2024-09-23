@@ -1,6 +1,5 @@
 import React, { useContext, memo } from "react";
-import { ThemeContext } from "styled-components";
-import styled from "styled-components";
+import styled, { ThemeContext } from "styled-components";
 import Popup from "reactjs-popup";
 import Svg from "../styles/Svg";
 import ToggleTheme from "./ToggleTheme";
@@ -14,7 +13,7 @@ const Wrapper = styled.div`
 `;
 
 const MoreBtn = memo(
-  React.forwardRef(({ open, ...props }, ref) => (
+  React.forwardRef(({ ...props }, ref) => (
     <div ref={ref} {...props} aria-label="More Options">
       <Svg viewBox="0 0 24 24">
         <g>

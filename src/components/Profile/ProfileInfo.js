@@ -97,7 +97,6 @@ const ProfileInfo = ({ profile }) => {
   }
 
   const {
-    id,
     coverPhoto,
     avatarUrl,
     bio,
@@ -108,7 +107,6 @@ const ProfileInfo = ({ profile }) => {
     handle,
     firstname,
     lastname,
-    fullname,
   } = profile;
 
   return (

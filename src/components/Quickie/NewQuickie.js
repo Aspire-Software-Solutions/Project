@@ -122,12 +122,6 @@ const NewQuickie = () => {
 
     uploadTask.on(
       "state_changed",
-      (snapshot) => {
-        // You can implement progress tracking here if needed
-      },
-      (error) => {
-        toast.error("Error uploading file.");
-      },
       async () => {
         const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
         setMediaUrl(downloadURL); // Save the download URL as mediaUrl

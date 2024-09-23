@@ -101,7 +101,6 @@ const Quickie = ({ quickie }) => {
     handle,
     userName,
     mediaUrl,
-    isQuickieMine,
     likes = [], // Ensure likes is an array
     likesCount = 0,
     commentsCount,

@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import styled from "styled-components";
 import CustomResponse from "../CustomResponse";
 import Quickie from "../Quickie/Quickie";
 import Loader from "../Loader";
-import { getFirestore, collection, query, where, getDocs } from "firebase/firestore"; // Firestore
 
 const Wrapper = styled.div`
   position: relative;

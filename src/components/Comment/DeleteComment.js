@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { TrashIcon } from "../Icons";
 import { getFirestore, doc, updateDoc, arrayRemove, increment } from "firebase/firestore"; // Firebase Firestore imports
 
-const DeleteComment = ({ id, commentData }) => {
+const DeleteComment = ({ commentData }) => {
   const { quickieId } = useParams(); // Assuming `quickieId` is in the URL
   const db = getFirestore()
 

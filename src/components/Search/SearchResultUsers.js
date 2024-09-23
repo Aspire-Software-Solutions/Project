@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { getFirestore, collection, query, where, startAt, endAt, getDocs } from "firebase/firestore";
+import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
 import { User } from "../WhoToFollow";
 import CustomResponse from "../CustomResponse";
 import Loader from "../Loader";
