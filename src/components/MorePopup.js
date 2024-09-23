@@ -52,9 +52,13 @@ const MorePopup = () => {
         overlayStyle={overlayStyle}
         arrow={false}
       >
-        <ToggleTheme />
-        <ChangeColor />
-        <Logout />
+        {(close) => (  // Wrap children in a function
+          <>
+            <ToggleTheme />
+            <ChangeColor />
+            <Logout />
+          </>
+        )}
       </Popup>
     </Wrapper>
   );
