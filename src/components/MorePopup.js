@@ -52,6 +52,7 @@ const MorePopup = () => {
         overlayStyle={overlayStyle}
         arrow={false}
       >
+        {/* eslint-disable-next-line no-unused-vars */}
         {(close) => (  // Wrap children in a function
           <>
             <ToggleTheme />
