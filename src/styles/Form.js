@@ -4,7 +4,8 @@ export default styled.form`
   width: 380px;
   border: 1px solid ${(props) => props.theme.tertiaryColor};
   padding: 2rem;
-  border-radius: 10px;
+  border-radius: 1px;
+  border-color:  ${(props) => props.theme.borderColor};
 
   span {
     text-align: center;

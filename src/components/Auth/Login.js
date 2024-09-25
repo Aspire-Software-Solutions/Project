@@ -44,8 +44,9 @@ export default ({ changeToSignup }) => {
 
   return (
     <Form center onSubmit={handleLogin}>
+      <h2>Log In</h2>
       <Input
-        text="Email"
+        text="Username/Email"
         type="email"
         value={email.value}
         onChange={email.onChange}
