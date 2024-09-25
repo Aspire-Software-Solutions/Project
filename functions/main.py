@@ -1,11 +1,13 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS  # Import CORS
 import firebase_admin
 import sendgrid
 from sendgrid.helpers.mail import Mail, To
 import os
 
-# Initialize Flask app
+# Initialize Flask app and enable CORS
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # Initialize Firebase Admin SDK
 firebase_admin.initialize_app()
@@ -28,7 +30,7 @@ def send_verification_email():
 
     try:
         message = Mail(
-            from_email='your-email@example.com',  # Replace with your verified SendGrid email
+            from_email='brayanquevedo2134@gmail.com',  # Replace with your verified SendGrid email
             to_emails=To(email),
             subject='Your Verification Code',
             html_content=f'<strong>Your verification code is: {verification_code}</strong>'
@@ -38,6 +40,6 @@ def send_verification_email():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
-# This ensures the app is recognized as the main entry point by Firebase
+# Main entry point
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080)
