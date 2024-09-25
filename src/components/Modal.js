@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './Modal.css';  // Import modal styling
 
 const Modal = ({ email, onCodeSubmit, isOpen, onClose }) => {
   const [code, setCode] = useState('');
