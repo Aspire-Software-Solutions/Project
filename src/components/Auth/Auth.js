@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Login from "./Login";
 import Signup from "./Signup";
+import {auth, firestore} from '../../index';
 
 const Auth = () => {
   const [authAction, setAuthAction] = useState("LOGIN");

@@ -6,6 +6,7 @@ import Button from "../../styles/Button";
 import Form from "../../styles/Form";
 import { displayError } from "../../utils";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth"; // Firebase import
+import {auth, firestore} from '../../index';
 
 export default ({ changeToSignup }) => {
   const email = useInput("");

@@ -19,6 +19,10 @@ const firebaseConfig = {
 // Initialize Firebase
 initializeApp(firebaseConfig);
 
+// Initialize Firebase Authentication and Firestore
+export const auth = getAuth(app);  // Export authentication
+export const firestore = getFirestore(app);  // Export Firestore
+
 const RootApp = () => (
   <ThemeProvider>
     <App />

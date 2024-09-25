@@ -7,6 +7,8 @@ import Form from "../../styles/Form";
 import { displayError } from "../../utils";
 import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth"; // Firebase imports
 import { getFirestore, doc, setDoc, serverTimestamp } from "firebase/firestore"; // Firestore imports
+import {auth, firestore} from '../../index';
+
 
 export default ({ changeToLogin }) => {
   const firstname = useInput("");
