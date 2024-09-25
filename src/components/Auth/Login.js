@@ -8,6 +8,20 @@ import Button from "../../styles/Button";
 import Form from "../../styles/Form";
 import Modal from "../Modal";  // Modal for verification input
 
+// Custom Hook for handling input values
+const useInput = (initialValue) => {
+  const [value, setValue] = useState(initialValue);
+
+  const handleChange = (e) => {
+    setValue(e.target.value);
+  };
+
+  return {
+    value,
+    onChange: handleChange,
+  };
+};
+
 export default () => {
   const email = useInput("");  
   const password = useInput("");
@@ -18,30 +32,43 @@ export default () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
+      // Firebase sign-in method
       const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
       const { user } = userCredential;
-
+  
+      // Generate a random 6-digit verification code
       const generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
-
+  
+      // Call Firebase Cloud Function to send verification email
       const functions = getFunctions();
       const sendVerificationEmail = httpsCallable(functions, 'send_verification_email');
-      await sendVerificationEmail({
+      const result = await sendVerificationEmail({
         email: user.email,
         verificationCode: generatedCode,
       });
-
+  
+      // If the Cloud Function call fails, prevent login
+      if (!result || !result.data || !result.data.success) {
+        throw new Error("Verification email failed to send. Please try again.");
+      }
+  
+      // Store the verification code in Firestore with a 5-minute expiration
       await setDoc(doc(firestore, "verificationCodes", user.uid), {
         code: generatedCode,
-        expiresAt: Date.now() + 5 * 60 * 1000, 
+        expiresAt: Date.now() + 5 * 60 * 1000,  // 5 minutes from now
       });
-
+  
+      // Show modal for the user to input the verification code
       setVerificationEmail(user.email);
       setModalOpen(true);
-
+  
     } catch (err) {
+      // Handle the error if the API call or login fails
       console.error('Error during login:', err);
+      alert(err.message || 'An error occurred during login. Please try again.');
     }
   };
+  
 
   const validateCode = async (inputCode) => {
     try {
@@ -52,6 +79,7 @@ export default () => {
       if (docSnap.exists()) {
         const { code, expiresAt } = docSnap.data();
 
+        // Check if the code is valid and not expired
         if (code === inputCode && Date.now() < expiresAt) {
           alert("Code is correct. You are now logged in.");
           localStorage.setItem("token", await user.getIdToken());
