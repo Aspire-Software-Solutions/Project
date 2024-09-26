@@ -15,12 +15,13 @@ export default function Login({ setUser, setAuthAction }) {
       const { user } = userCredential;
 
       // Check if multi-factor authentication is required
-      if (user.multiFactor.enrolledFactors.length > 0) {
+      if (user?.multiFactor?.enrolledFactors?.length > 0) {
         toast.info("Multi-factor authentication required. Sending SMS...");
         setUser(user);
         setAuthAction("2FA"); // Redirect to 2FA flow
       } else {
         // Normal login if no 2FA required
+        console.log("User logged in WITHOUT 2FA");  // Log message for users without 2FA
         toast.success("Logged in successfully!");
         setUser(user);
       }
