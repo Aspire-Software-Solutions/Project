@@ -1,18 +1,23 @@
 import React, { useState } from "react";
 import Login from "./Login";
 import Signup from "./Signup";
+import TwoFactorAuth from "./TwoFactorAuth"; // 2FA Component
 
 const Auth = () => {
   const [authAction, setAuthAction] = useState("LOGIN");
+  const [user, setUser] = useState(null);  // Hold the user info for 2FA
+
   const changeToLogin = () => setAuthAction("LOGIN");
   const changeToSignup = () => setAuthAction("SIGNUP");
 
   return (
     <>
       {authAction === "LOGIN" ? (
-        <Login changeToSignup={changeToSignup} />
+        <Login changeToSignup={changeToSignup} setUser={setUser} setAuthAction={setAuthAction} />
+      ) : authAction === "SIGNUP" ? (
+        <Signup changeToLogin={changeToLogin} setUser={setUser} />
       ) : (
-        <Signup changeToLogin={changeToLogin} />
+        <TwoFactorAuth user={user} />
       )}
     </>
   );
