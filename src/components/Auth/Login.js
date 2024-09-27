@@ -121,17 +121,17 @@ export default ({ changeToSignup }) => {
   const handleForgotPassword = () => {
     toast.info("Redirecting to password reset page...");
   };
-  return (
-  <Container fluid className="d-flex align-items-center justify-content-center" style={{ height: "100vh", backgroundColor: "#5F0000" }}>
-      <Row className="align-items-center" style={{ width: "100%" }}>
-        {/* Logo Column */}
-        <Col xs={6} md={6} className="text-center">
-          {/* Remove the image since it's causing an issue */}
-          <h1 className="text-white">RIVAL</h1>
-        </Col>
 
+  return (
+    <Container fluid className="d-flex align-items-center justify-content-center" style={{ height: "100vh", backgroundColor: "#5F0000" }}>
+      <Row className="d-flex align-items-center justify-content-center" style={{ width: "100%" }}>
+        {/* Logo Column */}
+        <Col xs={12} md={6} className="d-none d-md-block d-flex justify-content-center align-items-center">
+          <img src={companyLogo} className="col-12" alt="Company Logo" />
+        </Col>
+  
         {/* Form Column */}
-        <Col xs={6} md={6} className="text-white">
+        <Col xs={12} md={6} className="text-white">
           <Form onSubmit={handleLogin}>
             <h2 className="text-center mb-4" style={{ fontSize: "3rem", fontWeight: "bold" }}>Log In</h2>
             <Form.Group className="mb-3">
@@ -142,9 +142,9 @@ export default ({ changeToSignup }) => {
               <Form.Label>Password</Form.Label>
               <Form.Control type="password" placeholder="Enter password" value={password.value} onChange={password.onChange} />
             </Form.Group>
-
+  
             <Button type="submit" className="w-100 btn btn-primary" style={{ display: "none" }} aria-hidden="true"></Button>
-
+  
             <div className="text-center mt-3">
               <span className="text-white" style={{ cursor: "pointer" }} onClick={handleForgotPassword}>Forgot Password?</span>
             </div>
@@ -156,4 +156,6 @@ export default ({ changeToSignup }) => {
       </Row>
     </Container>
   );
+  
+
 };
