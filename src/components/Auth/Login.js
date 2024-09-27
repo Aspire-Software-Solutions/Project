@@ -102,7 +102,8 @@ const Login = () => {
     }
 
     try {
-      const phoneAuthCredential = PhoneAuthProvider.credential(verificationId, code);
+      // Ensure the code is treated as a string
+      const phoneAuthCredential = PhoneAuthProvider.credential(verificationId, code.toString());
       console.log("Phone auth credential generated:", phoneAuthCredential);
 
       const userCredential = await resolver.resolveSignIn(phoneAuthCredential);
@@ -110,14 +111,14 @@ const Login = () => {
       toast.success("Multi-factor authentication successful!");
 
       // Redirect or move to the next part of your application here.
-      // For example:
-      // navigate("/dashboard"); // If using React Router or similar navigation.
-
+      // Example: navigate("/dashboard"); if using React Router.
+      
     } catch (error) {
       console.error("Error verifying the code:", error);
       toast.error("Invalid verification code. Please try again.");
     }
   };
+
 
   return (
     <div>
