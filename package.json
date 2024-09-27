@@ -8,6 +8,7 @@
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
     "axios": "^0.19.2",
+    "bootstrap": "^5.3.3",
     "firebase": "^10.13.2",
     "firebase-tools": "^13.20.0",
     "husky": "^4.2.5",

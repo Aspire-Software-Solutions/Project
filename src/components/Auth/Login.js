@@ -11,6 +11,7 @@ import { toast } from "react-toastify";
 import useInput from "../../hooks/useInput";
 import { Form, Button, Container, Row, Col } from "react-bootstrap";
 import { displayError } from "../../utils";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Adjust the path if necessary
 const companyLogo = "/companyLogo.png";
@@ -120,73 +121,37 @@ export default ({ changeToSignup }) => {
   const handleForgotPassword = () => {
     toast.info("Redirecting to password reset page...");
   };
-
   return (
-    <Container fluid className="d-flex align-items-center justify-content-center" style={{ height: "100vh", backgroundColor: "#8B0000" }}>
-      <Row>
-        <Col md={6} className="text-center">
-          <img src={companyLogo} alt="Company Logo" style={{ width: "550px" }} />
+  <Container fluid className="d-flex align-items-center justify-content-center" style={{ height: "100vh", backgroundColor: "#5F0000" }}>
+      <Row className="align-items-center" style={{ width: "100%" }}>
+        {/* Logo Column */}
+        <Col xs={6} md={6} className="text-center">
+          {/* Remove the image since it's causing an issue */}
+          <h1 className="text-white">RIVAL</h1>
         </Col>
-        <Col md={6}>
-          <Form onSubmit={handleLogin} className="text-white">
+
+        {/* Form Column */}
+        <Col xs={6} md={6} className="text-white">
+          <Form onSubmit={handleLogin}>
             <h2 className="text-center mb-4" style={{ fontSize: "3rem", fontWeight: "bold" }}>Log In</h2>
             <Form.Group className="mb-3">
               <Form.Label>Email</Form.Label>
-              <Form.Control 
-                type="email" 
-                value={email.value} 
-                onChange={email.onChange} 
-                placeholder="Enter email" 
-              />
+              <Form.Control type="email" placeholder="Enter email" value={email.value} onChange={email.onChange} />
             </Form.Group>
-
             <Form.Group className="mb-3">
               <Form.Label>Password</Form.Label>
-              <Form.Control 
-                type="password" 
-                value={password.value} 
-                onChange={password.onChange} 
-                placeholder="Enter password" 
-              />
+              <Form.Control type="password" placeholder="Enter password" value={password.value} onChange={password.onChange} />
             </Form.Group>
 
-            <Button type="submit" className="w-100" style={{ display: "none" }} aria-hidden="true"></Button>
+            <Button type="submit" className="w-100 btn btn-primary" style={{ display: "none" }} aria-hidden="true"></Button>
 
             <div className="text-center mt-3">
-              <span className="text-white" onClick={handleForgotPassword} style={{ cursor: "pointer" }}>
-                Forgot Password?
-              </span>
+              <span className="text-white" style={{ cursor: "pointer" }} onClick={handleForgotPassword}>Forgot Password?</span>
             </div>
             <div className="text-center mt-2">
-              <span className="text-white" onClick={changeToSignup} style={{ cursor: "pointer" }}>
-                Create New Account?
-              </span>
+              <span className="text-white" style={{ cursor: "pointer" }} onClick={changeToSignup}>Create New Account?</span>
             </div>
           </Form>
-
-          {/* reCAPTCHA container for 2FA */}
-          <div id="recaptcha-container"></div>
-
-          {/* Second factor authentication (2FA): send and verify SMS code */}
-          {resolver && (
-            <>
-              <Button className="mt-4" onClick={sendVerificationCode}>
-                Send Verification Code
-              </Button>
-              <Form.Group className="mt-3">
-                <Form.Label>Verification Code</Form.Label>
-                <Form.Control 
-                  type="text" 
-                  value={code} 
-                  onChange={(e) => setCode(e.target.value)} 
-                  placeholder="Enter verification code"
-                />
-              </Form.Group>
-              <Button className="mt-3" onClick={verifyCode}>
-                Verify
-              </Button>
-            </>
-          )}
         </Col>
       </Row>
     </Container>
