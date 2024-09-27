@@ -15,9 +15,7 @@ const Auth = () => {
         <Login changeToSignup={changeToSignup} setUser={setUser} setAuthAction={setAuthAction} />
       ) : authAction === "SIGNUP" ? (
         <Signup changeToLogin={changeToLogin} setUser={setUser} />
-      ) : (
-        <TwoFactorAuth user={user} />
-      )}
+      ) : null}
     </>
   );
 };
