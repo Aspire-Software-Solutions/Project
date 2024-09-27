@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getAuth, getMultiFactorResolver, PhoneAuthProvider, RecaptchaVerifier, signInWithEmailAndPassword } from "firebase/auth";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";  // Import useNavigate for redirection
+
 
 const Login = () => {
   const [email, setEmail] = useState("");  // User email for first factor auth
@@ -12,7 +12,6 @@ const Login = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);  // Index of the selected phone MFA method
 
   const auth = getAuth();  // Initialize Firebase auth instance
-  const navigate = useNavigate();  // Use React Router's useNavigate for redirection
 
   useEffect(() => {
     return () => {
@@ -108,12 +107,15 @@ const Login = () => {
       const phoneAuthCredential = PhoneAuthProvider.credential(verificationId, code.toString());
       console.log("Phone auth credential generated:", phoneAuthCredential);
 
+      // Complete multi-factor authentication
       const userCredential = await resolver.resolveSignIn(phoneAuthCredential);
       console.log("Multi-factor authentication successful. User:", userCredential);
       toast.success("Multi-factor authentication successful!");
 
-      // Redirect to the dashboard after successful 2FA
-      navigate("/dashboard");  // This will redirect the user to /dashboard after successful 2FA
+      // Redirect user now that everything is complete!
+      const { user } = userCredential;
+      localStorage.setItem("token", await user.getIdToken());
+      localStorage.setItem("user", JSON.stringify(user));
       
     } catch (error) {
       console.error("Error verifying the code:", error);
