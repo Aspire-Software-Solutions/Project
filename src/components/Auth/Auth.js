@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import Login from "./Login";
 import Signup from "./Signup";
-import TwoFactorAuth from "./TwoFactorAuth"; // 2FA Component
 
 const Auth = () => {
   const [authAction, setAuthAction] = useState("LOGIN");
