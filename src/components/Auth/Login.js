@@ -1,40 +1,45 @@
 import React, { useState, useEffect } from "react";
-import { getAuth, getMultiFactorResolver, PhoneAuthProvider, RecaptchaVerifier, signInWithEmailAndPassword } from "firebase/auth";
+import { 
+  getAuth, 
+  getMultiFactorResolver, 
+  PhoneAuthProvider, 
+  RecaptchaVerifier, 
+  signInWithEmailAndPassword,
+  PhoneMultiFactorGenerator 
+} from "firebase/auth";
 import { toast } from "react-toastify";
 
-
 const Login = () => {
-  const [email, setEmail] = useState("");  // User email for first factor auth
-  const [password, setPassword] = useState("");  // User password for first factor auth
-  const [code, setCode] = useState("");  // Verification code entered by user for 2FA
-  const [verificationId, setVerificationId] = useState(null);  // Verification ID returned from Firebase after sending SMS
-  const [resolver, setResolver] = useState(null);  // Firebase MFA resolver
-  const [selectedIndex, setSelectedIndex] = useState(0);  // Index of the selected phone MFA method
+  const [email, setEmail] = useState(""); // First factor: email
+  const [password, setPassword] = useState(""); // First factor: password
+  const [code, setCode] = useState(""); // Verification code for 2FA
+  const [verificationId, setVerificationId] = useState(null); // For storing verification ID
+  const [resolver, setResolver] = useState(null); // Multi-factor resolver
+  const [selectedIndex, setSelectedIndex] = useState(0); // Index of selected 2FA method
 
-  const auth = getAuth();  // Initialize Firebase auth instance
+  const auth = getAuth(); // Initialize Firebase auth instance
 
   useEffect(() => {
     return () => {
       if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();  // Cleanup the recaptcha verifier when the component is unmounted
+        window.recaptchaVerifier.clear(); // Cleanup reCAPTCHA
       }
     };
   }, []);
 
-  // Handle sign-in with email and password (first factor)
+  // First factor authentication (email/password)
   const signInWithFirstFactor = async () => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log("User signed in:", userCredential);
       toast.success("First factor authentication successful!");
-      // If successful, no MFA required.
     } catch (error) {
-      if (error.code === 'auth/multi-factor-auth-required') {
-        // User needs to complete multi-factor authentication (MFA)
+      if (error.code === "auth/multi-factor-auth-required") {
+        // Multi-factor authentication required (2FA)
         const resolver = getMultiFactorResolver(auth, error);
         console.log("Multi-factor resolver:", resolver);
-        setResolver(resolver);  // Store resolver for MFA
-        toast.info("Multi-factor authentication required. Sending verification code.");
+        setResolver(resolver);
+        toast.info("2FA required. Sending verification code.");
       } else {
         console.error("Error during first factor authentication:", error);
         toast.error("Failed to authenticate. Please try again.");
@@ -42,7 +47,7 @@ const Login = () => {
     }
   };
 
-  // Send the MFA verification code (second factor)
+  // Send the 2FA verification code (SMS)
   const sendVerificationCode = async () => {
     if (!resolver) {
       console.error("Multi-factor resolver is missing.");
@@ -50,13 +55,13 @@ const Login = () => {
       return;
     }
 
-    // Check if reCAPTCHA is already initialized or reinitialize it if necessary
+    // Initialize reCAPTCHA if not already initialized
     if (!window.recaptchaVerifier) {
       try {
-        // Modify the RecaptchaVerifier initialization with auth as the first parameter
+        // Initialize reCAPTCHA with `auth` as the first argument
         window.recaptchaVerifier = new RecaptchaVerifier(
-          auth,  // First parameter is auth
-          'recaptcha-container',  // Second parameter is the recaptcha container ID
+          auth, // First parameter is auth
+          "recaptcha-container", // Second parameter is the recaptcha container ID
           {
             size: "invisible",
             callback: (response) => {
@@ -67,6 +72,7 @@ const Login = () => {
             },
           }
         );
+        await window.recaptchaVerifier.render(); // Ensure it's rendered
       } catch (error) {
         console.error("Error initializing reCAPTCHA:", error);
         toast.error("Failed to initialize reCAPTCHA.");
@@ -76,47 +82,48 @@ const Login = () => {
 
     try {
       const phoneInfoOptions = {
-        multiFactorHint: resolver.hints[selectedIndex],  // Assuming single MFA method for now
-        session: resolver.session
+        multiFactorHint: resolver.hints[selectedIndex], // Selected phone method
+        session: resolver.session, // Multi-factor session from the resolver
       };
 
-      // Send SMS with verification code
       const phoneAuthProvider = new PhoneAuthProvider(auth);
       const verificationId = await phoneAuthProvider.verifyPhoneNumber(phoneInfoOptions, window.recaptchaVerifier);
-      console.log("Verification code sent, verificationId:", verificationId);
-      setVerificationId(verificationId);
-      toast.success("SMS sent. Please enter the verification code.");
-
+      setVerificationId(verificationId); // Save verification ID
+      toast.success("Verification code sent to your phone.");
     } catch (error) {
-      console.error("Error sending SMS:", error);
-      toast.error("Failed to send SMS. Please try again.");
-      if (window.recaptchaVerifier) window.recaptchaVerifier.clear();  // Reset reCAPTCHA
+      console.error("Error sending verification code:", error);
+      toast.error("Failed to send verification code. Please try again.");
+      window.recaptchaVerifier.clear(); // Reset reCAPTCHA on failure
     }
   };
 
-  // Verify the code and complete sign-in (second factor)
+  // Verify the SMS code entered by the user
   const verifyCode = async () => {
     if (!verificationId || !resolver) {
-      console.log("Verification ID or multi-factor resolver missing.");
-      toast.error("Verification ID or multi-factor resolver missing.");
+      console.error("Verification ID or resolver missing.");
+      toast.error("Verification ID or resolver missing.");
       return;
     }
 
     try {
-      // Ensure the code is treated as a string
-      const phoneAuthCredential = PhoneAuthProvider.credential(verificationId, code.toString());
-      console.log("Phone auth credential generated:", phoneAuthCredential);
+      // Create a PhoneAuthCredential
+      const phoneAuthCredential = PhoneAuthProvider.credential(verificationId, code);
 
-      // Complete multi-factor authentication
-      const userCredential = await resolver.resolveSignIn(phoneAuthCredential);
-      console.log("Multi-factor authentication successful. User:", userCredential);
-      toast.success("Multi-factor authentication successful!");
+      // Create a MultiFactorAssertion
+      const multiFactorAssertion = PhoneMultiFactorGenerator.assertion(phoneAuthCredential);
 
-      // Redirect user now that everything is complete!
+      // Complete sign-in with multi-factor assertion
+      const userCredential = await resolver.resolveSignIn(multiFactorAssertion);
+      console.log("2FA authentication successful. User:", userCredential);
+
+      // Store user token and details in localStorage
       const { user } = userCredential;
       localStorage.setItem("token", await user.getIdToken());
       localStorage.setItem("user", JSON.stringify(user));
-      
+
+      // Redirect after successful authentication
+      toast.success("Successfully logged in with 2FA!");
+
     } catch (error) {
       console.error("Error verifying the code:", error);
       toast.error("Invalid verification code. Please try again.");
@@ -125,7 +132,7 @@ const Login = () => {
 
   return (
     <div>
-      {/* First factor login: email and password */}
+      {/* First factor authentication: email and password */}
       <input
         type="text"
         value={email}
@@ -140,10 +147,10 @@ const Login = () => {
       />
       <button onClick={signInWithFirstFactor}>Sign In</button>
 
-      {/* reCAPTCHA container for MFA */}
-      <div id="recaptcha-container"></div>  {/* Ensure this container is rendered before initializing reCAPTCHA */}
+      {/* reCAPTCHA container for 2FA */}
+      <div id="recaptcha-container"></div>
 
-      {/* Second factor (MFA): send and verify SMS code */}
+      {/* Second factor authentication (2FA): send and verify SMS code */}
       {resolver && (
         <>
           <button onClick={sendVerificationCode}>Send Verification Code</button>
