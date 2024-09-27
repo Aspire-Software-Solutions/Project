@@ -6,7 +6,7 @@ import {
   RecaptchaVerifier, 
   signInWithEmailAndPassword,
   PhoneMultiFactorGenerator 
-} from "firebase/auth";
+} from "firebase/auth"; // Import what we need from Firebase for the Authentication process (login and 2FA SMS)
 import { toast } from "react-toastify";
 
 const Login = () => {
@@ -30,16 +30,22 @@ const Login = () => {
   // First factor authentication (email/password)
   const signInWithFirstFactor = async () => {
     try {
+      // User inputs email and password
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log("User signed in:", userCredential);
       toast.success("First factor authentication successful!");
+
+      // If they have 2FA with SMS, they must continue onto the next step of verification
     } catch (error) {
       if (error.code === "auth/multi-factor-auth-required") {
+
         // Multi-factor authentication required (2FA)
         const resolver = getMultiFactorResolver(auth, error);
         console.log("Multi-factor resolver:", resolver);
         setResolver(resolver);
         toast.info("2FA required. Sending verification code.");
+
+       // SEND THEM HERE if they could not login AND they didn't have 2FA (aka they didn't input their password or email) 
       } else {
         console.error("Error during first factor authentication:", error);
         toast.error("Failed to authenticate. Please try again.");
