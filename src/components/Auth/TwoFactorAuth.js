@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, PhoneAuthProvider } from "firebase/auth";
+import { getAuth, RecaptchaVerifier, PhoneAuthProvider } from "firebase/auth";
 import { toast } from "react-toastify";
+import { auth} from "../../index";
 
 const TwoFactorAuth = ({ user }) => {
-  const [code, setCode] = useState("");  // Code entered by the user
-  const [verificationId, setVerificationId] = useState(null);  // Holds the verification ID for 2FA
-  const [isRecaptchaVerified, setIsRecaptchaVerified] = useState(false);  // Track recaptcha verification
-  const auth = getAuth();  // Initialize Firebase authentication
+  const [code, setCode] = useState(""); // Code entered by the user
+  const [verificationId, setVerificationId] = useState(null); // Holds the verification ID for 2FA
+  const [isRecaptchaVerified, setIsRecaptchaVerified] = useState(false); // Track recaptcha verification
+  const auth = getAuth(); // Initialize Firebase authentication
 
   useEffect(() => {
     // Cleanup Recaptcha when the component unmounts
@@ -17,26 +18,34 @@ const TwoFactorAuth = ({ user }) => {
     };
   }, []);
 
-  // Send verification SMS to user’s phone number
+  // Send verification SMS to user’s phone number via resolver
   const sendVerificationCode = async () => {
-    if (!user || !user.phoneNumber) {
-      toast.error("Phone number is missing for this user.");
+    if (!user || !user.resolver) {
+      toast.error("Multi-factor authentication resolver is missing.");
       return;
     }
-
-    // Setup RecaptchaVerifier
-    const recaptchaVerifier = new RecaptchaVerifier("recaptcha-container", {
-      size: "invisible",
-      callback: () => {
-        setIsRecaptchaVerified(true);  // Mark Recaptcha as solved
-        console.log("Recaptcha solved");
-      },
-    }, auth);
-
+  
     try {
-      // Send the SMS with Recaptcha solved
-      const confirmationResult = await signInWithPhoneNumber(auth, user.phoneNumber, recaptchaVerifier);
-      setVerificationId(confirmationResult.verificationId);  // Store verificationId to be used in verifyCode
+      const recaptchaVerifier = new RecaptchaVerifier(
+        "recaptcha-container",
+        {
+          size: "invisible",
+          callback: () => {
+            setIsRecaptchaVerified(true);
+            console.log("Recaptcha solved");
+          },
+        },
+        auth  // Use the initialized auth instance from index.js
+      );
+  
+      const phoneInfoOptions = user.resolver.hints[0];
+  
+      const confirmationResult = await user.resolver.verifyPhoneNumber(
+        phoneInfoOptions,
+        recaptchaVerifier
+      );
+  
+      setVerificationId(confirmationResult.verificationId);
       toast.success("SMS sent successfully. Please enter the code.");
     } catch (error) {
       console.error("Error sending SMS: ", error);
@@ -46,35 +55,32 @@ const TwoFactorAuth = ({ user }) => {
 
   // Verify the code entered by the user
   const verifyCode = async () => {
-    if (!verificationId) {
+    if (!verificationId || !user.resolver) {
       toast.error("Please send the verification code first.");
       return;
     }
 
-    if (!code) {
-      toast.error("Please enter the code.");
-      return;
-    }
-
     try {
-      const credential = PhoneAuthProvider.credential(verificationId, code);  // Generate the credential from the code
-      if (auth.currentUser) {
-        await auth.currentUser.linkWithCredential(credential);  // Link the phone number to the signed-in user
-        toast.success("Phone number verified and linked to your account!");
-      } else {
-        toast.error("No user is currently signed in.");
-      }
+      const phoneAuthCredential = PhoneAuthProvider.credential(
+        verificationId,
+        code
+      );
+
+      // Resolve the multi-factor sign-in using the resolver
+      const userCredential = await user.resolver.resolveSignIn(phoneAuthCredential);
+      toast.success("Multi-factor authentication successful!");
+
+      console.log("User authenticated", userCredential);
     } catch (error) {
-      console.error("Error verifying code: ", error);
-      toast.error("Verification failed. Please try again.");
+      console.error("Error verifying the code: ", error);
+      toast.error("Invalid verification code. Please try again.");
     }
   };
 
   return (
     <div>
-      {/* Recaptcha container (invisible but required for Recaptcha validation) */}
       <div id="recaptcha-container"></div>
-      
+
       <button onClick={sendVerificationCode}>Send Verification Code</button>
       <input
         type="text"

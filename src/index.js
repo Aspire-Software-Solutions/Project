@@ -3,6 +3,7 @@ import { render } from "react-dom";
 import App from "./App";
 import { ThemeProvider } from "./context/ThemeContext";
 import { initializeApp } from "firebase/app"; // Import Firebase App
+import { getAuth } from "firebase/auth";
 
 // Your Firebase configuration (replace with your actual config)
 const firebaseConfig = {
@@ -18,6 +19,9 @@ const firebaseConfig = {
 
 // Initialize Firebase
 initializeApp(firebaseConfig);
+
+// Initialize Firebase Authentication and export it
+export const auth = getAuth();
 
 const RootApp = () => (
   <ThemeProvider>

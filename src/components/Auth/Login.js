@@ -21,7 +21,7 @@ export default function Login({ setUser, setAuthAction }) {
         setAuthAction("2FA"); // Redirect to 2FA flow
       } else {
         // Normal login if no 2FA required
-        console.log("User logged in WITHOUT 2FA");  // Log message for users without 2FA
+        console.log("User logged in WITHOUT 2FA");
         toast.success("Logged in successfully!");
         setUser(user);
       }
@@ -29,7 +29,7 @@ export default function Login({ setUser, setAuthAction }) {
       if (error.code === "auth/multi-factor-auth-required") {
         const resolver = getMultiFactorResolver(auth, error);
         toast.info("Multi-factor authentication required. Please verify.");
-        setUser(resolver);  // Store resolver for further MFA flow
+        setUser({ resolver }); // Pass resolver to the 2FA component
         setAuthAction("2FA");
       } else {
         toast.error(error.message);
