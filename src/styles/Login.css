@@ -1,0 +1,57 @@
+#overallContainer{
+    height: 100vh;
+    background: #5F0000;
+}
+
+#verticalHexagon {
+    color: white;
+    background: rgb(114, 0, 0);
+    width: auto;
+    height: auto;
+    max-width: 90vw; /* Limits the width to 90% of the viewport width */
+    max-height: 90vh; /* Limits the height to 90% of the viewport height */
+    min-width: 300px; /* Ensures the hexagon doesn't get too narrow */
+    min-height: 400px; /* Ensures a minimum height for comfortable viewing */
+    clip-path: polygon(50% 2%, 96% 20%, 96% 80%, 50% 98%, 4% 80%, 4% 20%);
+    position: relative;
+    padding: 7rem 5rem; /* Adjusted padding to provide spacing around the content */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-sizing: border-box; /* Ensures padding is included in width/height calculations */
+    filter: drop-shadow(16px 16px);
+}   
+
+.customInput{
+    width: 100%;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    outline: none;
+}
+
+.customInput::placeholder {
+    color:  rgba(255, 255, 255, 0.7);
+}
+
+.customInput:focus{
+    color: #FFF;
+    background: rgb(114, 0, 0);
+    border-bottom-color: #FF4500;
+}
+
+.loginButton{
+    border: 0;
+    background: rgb(24,24,24);
+    color: white;
+}
+
+.loginButton:hover{
+    background: white;
+    color: rgb(24, 24, 24);
+}

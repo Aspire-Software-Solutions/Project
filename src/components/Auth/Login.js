@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react"; // Import React
 import { 
   getAuth, 
   getMultiFactorResolver, 
@@ -6,12 +6,13 @@ import {
   RecaptchaVerifier, 
   signInWithEmailAndPassword,
   PhoneMultiFactorGenerator 
-} from "firebase/auth";
-import { toast } from "react-toastify";
-import useInput from "../../hooks/useInput";
-import { Form, Button, Container, Row, Col } from "react-bootstrap";
-import { displayError } from "../../utils";
-import 'bootstrap/dist/css/bootstrap.min.css';
+} from "firebase/auth"; // Import authentication suite of products
+import { toast } from "react-toastify"; // App notifications
+import { Form, Button, Container, Row, Col } from "react-bootstrap"; // Bootstrap 5 UI Framework
+import 'bootstrap/dist/css/bootstrap.min.css'; // Bootstrap 5 CSS
+import { displayError } from "../../utils"; // Errors (that will be displayed as a notification)
+import useInput from "../../hooks/useInput"; // User input
+import '../../styles/Login.css' // Specific Styles for Login.CSS
 
 // Adjust the path if necessary
 const companyLogo = "/companyLogo.png";
@@ -123,29 +124,29 @@ export default ({ changeToSignup }) => {
   };
 
   return (
-    <Container fluid className="d-flex align-items-center justify-content-center" style={{ height: "100vh", backgroundColor: "#5F0000" }}>
+    <Container fluid className="d-flex align-items-center justify-content-center" id="overallContainer">
       <Row className="d-flex align-items-center justify-content-center" style={{ width: "100%" }}>
         {/* Logo Column */}
-        <Col xs={12} md={6} className="d-flex justify-content-center align-items-center">
-          <img src={companyLogo} alt="Company Logo" style={{ width: "550px" }} />
+        <Col xs={12} md={6} className="d-none d-sm-block d-flex justify-content-center align-items-center">
+          <img src={companyLogo} className="col-md-8 col-lg-6" alt="Company Logo" />
         </Col>
   
         {/* Form Column */}
-        <Col xs={12} md={6} className="text-white">
+        <Col xs={12} md={6} id="verticalHexagon">
           <Form onSubmit={handleLogin}>
             <h2 className="text-center mb-4" style={{ fontSize: "3rem", fontWeight: "bold" }}>Log In</h2>
             
             {/* First factor: email and password */}
             <Form.Group className="mb-3">
               <Form.Label>Email</Form.Label>
-              <Form.Control type="email" placeholder="Enter email" value={email.value} onChange={email.onChange} />
+              <Form.Control className="customInput" type="email" placeholder="Enter email" value={email.value} onChange={email.onChange} />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Password</Form.Label>
-              <Form.Control type="password" placeholder="Enter password" value={password.value} onChange={password.onChange} />
+              <Form.Control className="customInput" type="password" placeholder="Enter password" value={password.value} onChange={password.onChange} />
             </Form.Group>
   
-            <Button type="submit" className="w-100 btn btn-primary">Sign In</Button>
+            <Button type="submit" className="w-100 btn loginButton">Sign In</Button>
   
             {/* reCAPTCHA container for 2FA */}
             <div id="recaptcha-container"></div>
