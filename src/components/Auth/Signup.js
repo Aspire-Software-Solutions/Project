@@ -136,7 +136,7 @@ export default ({ changeToLogin }) => {
   return (
     <Container fluid className="d-flex align-items-center justify-content-center vh-100">
       <Row className="d-flex align-items-center justify-content-center" style={{ width: "100%" }}>
-        <Col xs={12} md={6} lg={5} className="p-4 border rounded shadow" id="verticalHexagon">
+        <Col xs={12} md={6} lg={5} className="p-4 border rounded shadow" id="verticalHexagonSignup">
           <h2 className="text-center mb-4" style={{ fontSize: "2.5rem", fontWeight: "bold" }}>Sign Up</h2>
           <Form onSubmit={verifyAndCreateAccount}>
             <Form.Group className="mb-3">
