@@ -1,137 +1,237 @@
-import React from "react";
+import React, { useState } from "react";
 import { toast } from "react-toastify";
-import useInput from "../../hooks/useInput";
-import Input from "../Input";
-import Button from "../../styles/Button";
-import Form from "../../styles/Form";
+import PhoneInput from 'react-phone-input-2'; // Import Phone Input
+import 'react-phone-input-2/lib/style.css'; // Import Phone Input CSS
+import { Form, Button, Container, Row, Col } from "react-bootstrap"; // Bootstrap imports
+import 'bootstrap/dist/css/bootstrap.min.css'; // Bootstrap 5 CSS
 import { displayError } from "../../utils";
-import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth"; // Firebase imports
-import { getFirestore, doc, setDoc, serverTimestamp } from "firebase/firestore"; // Firestore imports
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  updateProfile,
+  RecaptchaVerifier,
+  PhoneAuthProvider,
+} from "firebase/auth";
+import { getFirestore, doc, setDoc, serverTimestamp } from "firebase/firestore";
 
 export default ({ changeToLogin }) => {
-  const firstname = useInput("");
-  const lastname = useInput("");
-  const handle = useInput("");
-  const email = useInput("");
-  const password = useInput("");
-  const auth = getAuth(); // Firebase auth instance
-  const db = getFirestore(); // Firestore instance
+  const [firstname, setFirstname] = useState("");
+  const [lastname, setLastname] = useState("");
+  const [handle, setHandle] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [password, setPassword] = useState("");
+  const [code, setCode] = useState(""); // Verification code input
 
-  const handleSignup = async (e) => {
-    e.preventDefault();
-  
-    if (
-      !firstname.value ||
-      !lastname.value ||
-      !handle.value ||
-      !email.value ||
-      !password.value
-    ) {
-      return toast.error("You need to fill in all the fields");
+  const auth = getAuth();
+  const db = getFirestore();
+
+  const [verificationId, setVerificationId] = useState(null);
+  const [isCodeSent, setIsCodeSent] = useState(false);
+
+  // Send SMS Verification Code
+  const sendVerificationCode = async () => {
+    if (!phoneNumber) {
+      return toast.error("Please enter your phone number.");
     }
-  
-    // Check for invalid handle names
-    const invalidHandles = ["/", "explore", "settings/profile", "notifications", "bookmarks"];
-    if (invalidHandles.includes(handle.value)) {
-      return toast.error("Your handle is not valid, try a different one");
-    }
-  
-    // Check for non-alphanumeric handle
-    const re = /^[a-z0-9]+$/i;
-    if (re.exec(handle.value) === null) {
-      return toast.error(
-        "Your handle contains some non-alphanumeric characters, choose a better handle name"
+
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(
+        auth, // Firebase Auth instance should be passed first
+        "recaptcha-container", // Container ID
+        {
+          size: "invisible",
+          callback: () => {
+            console.log("reCAPTCHA solved.");
+          },
+          "expired-callback": () => {
+            console.log("reCAPTCHA expired.");
+          },
+        }
       );
-    }
-  
+    }    
+
     try {
-      // Use Firebase createUserWithEmailAndPassword method for sign-up
+      const phoneAuthProvider = new PhoneAuthProvider(auth);
+      const verificationId = await phoneAuthProvider.verifyPhoneNumber(
+        `+${phoneNumber}`,
+        window.recaptchaVerifier
+      );
+      setVerificationId(verificationId);
+      setIsCodeSent(true);
+      toast.success("Verification code sent to your phone.");
+    } catch (error) {
+      toast.error("Failed to send verification code. Please try again.");
+      window.recaptchaVerifier.clear();
+    }
+  };
+
+  // Verify SMS Code and Create Account
+  const verifyAndCreateAccount = async (e) => {
+    e.preventDefault();
+
+    if (
+      !firstname ||
+      !lastname ||
+      !handle ||
+      !email ||
+      !password ||
+      !verificationId ||
+      !code
+    ) {
+      return toast.error("Please fill in all the fields and verify your phone number.");
+    }
+
+    try {
+      const phoneAuthCredential = PhoneAuthProvider.credential(
+        verificationId,
+        code
+      );
+
+      // After successful verification, proceed with account creation
       const userCredential = await createUserWithEmailAndPassword(
         auth,
-        email.value,
-        password.value
+        email,
+        password
       );
-      
+
       const { user } = userCredential;
-  
-      // Update the user profile to include first and last name in Firebase Auth
+
       await updateProfile(user, {
-        displayName: `${firstname.value} ${lastname.value}`,
+        displayName: `${firstname} ${lastname}`,
       });
-  
+
       // Create a new profile in Firestore
-      const profileRef = doc(db, "profiles", user.uid); // Use user.uid as document ID
+      const profileRef = doc(db, "profiles", user.uid);
       await setDoc(profileRef, {
-        userId: user.uid,  // Firebase Auth user ID
-        fullname: `${firstname.value} ${lastname.value}`,  // Full name
-        handle: handle.value,  // Unique handle
-        avatarUrl: user.photoURL || "",  // Optionally use user avatar if available
-        createdAt: serverTimestamp(),  // Firestore timestamp
-        quickieCount: 0,  // Initially zero quickies
-        followersCount: 0,  // Initially zero followers
-        followingCount: 0,  // Initially zero following
-        followers: [],  // Initially empty followers array
-        following: [],  // Initially empty following array
-        bio: "",  // Bio field, initially empty
-        location: "",  // Location field, initially empty
-        website: "",  // Website field, initially empty
-        bookmarks: [],  // Initially empty bookmarks array
-        likes: []  // Initially empty likes array
+        userId: user.uid,
+        fullname: `${firstname} ${lastname}`,
+        handle,
+        avatarUrl: user.photoURL || "",
+        createdAt: serverTimestamp(),
+        quickieCount: 0,
+        followersCount: 0,
+        followingCount: 0,
+        followers: [],
+        following: [],
+        bio: "",
+        location: "",
+        website: "",
+        bookmarks: [],
+        likes: [],
       });
-  
+
       // Store user data in localStorage
       localStorage.setItem("token", await user.getIdToken());
       localStorage.setItem("user", JSON.stringify(user));
-  
+
       toast.success("You are signed up and logged in");
     } catch (err) {
-      console.error("Error signing up:", err); // Log error for debugging
+      console.error("Error signing up:", err);
       return displayError(err);
     }
-  
-    // Clear input fields after successful signup
-    [firstname, lastname, handle, email, password].forEach((field) =>
-      field.setValue("")
-    );
   };
-  
 
   return (
-    <Form center onSubmit={handleSignup}>
-      <div className="group-input">
-        <Input
-          text="First Name"
-          value={firstname.value}
-          onChange={firstname.onChange}
-        />
-        <Input
-          text="Last Name"
-          value={lastname.value}
-          onChange={lastname.onChange}
-        />
-      </div>
-      <Input text="Handle" value={handle.value} onChange={handle.onChange} />
-      <div className="group-input">
-        <Input
-          text="Email"
-          type="email"
-          value={email.value}
-          onChange={email.onChange}
-        />
-        <Input
-          text="Password"
-          type="password"
-          value={password.value}
-          onChange={password.onChange}
-        />
-      </div>
-      <Button xl outline type="submit">
-        Sign up
-      </Button>
-      <span>or</span>
-      <Button xl type="button" onClick={changeToLogin}>
-        Login
-      </Button>
-    </Form>
+    <Container fluid className="d-flex align-items-center justify-content-center vh-100">
+      <Row className="d-flex align-items-center justify-content-center" style={{ width: "100%" }}>
+        <Col xs={12} md={6} lg={5} className="p-4 border rounded shadow" style={{ backgroundColor: "#fff" }}>
+          <h2 className="text-center mb-4" style={{ fontSize: "2.5rem", fontWeight: "bold" }}>Sign Up</h2>
+          <Form onSubmit={verifyAndCreateAccount}>
+            <Form.Group className="mb-3">
+              <Form.Label>First Name</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter first name"
+                value={firstname}
+                onChange={(e) => setFirstname(e.target.value)}
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Last Name</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter last name"
+                value={lastname}
+                onChange={(e) => setLastname(e.target.value)}
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Handle</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter a unique handle"
+                value={handle}
+                onChange={(e) => setHandle(e.target.value)}
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Email</Form.Label>
+              <Form.Control
+                type="email"
+                placeholder="Enter email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Phone Number</Form.Label>
+              <PhoneInput
+                country={'us'} // Default country (can be changed)
+                value={phoneNumber}
+                onChange={phone => setPhoneNumber(phone)}
+                inputStyle={{ width: "100%" }} // Make sure it aligns with other form controls
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Password</Form.Label>
+              <Form.Control
+                type="password"
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </Form.Group>
+            <div id="recaptcha-container"></div>
+
+            {!isCodeSent ? (
+              <Button
+                variant="primary"
+                className="w-100 mt-3"
+                onClick={sendVerificationCode}
+              >
+                Send Verification Code
+              </Button>
+            ) : (
+              <>
+                <Form.Group className="mt-3 mb-3">
+                  <Form.Label>Verification Code</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter the verification code"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                  />
+                </Form.Group>
+                <Button variant="success" type="submit" className="w-100">
+                  Verify and Sign Up
+                </Button>
+              </>
+            )}
+            <div className="text-center mt-3">
+              <span style={{ cursor: "pointer" }} onClick={changeToLogin}>
+                Already have an account? Login
+              </span>
+            </div>
+          </Form>
+        </Col>
+      </Row>
+    </Container>
   );
 };
