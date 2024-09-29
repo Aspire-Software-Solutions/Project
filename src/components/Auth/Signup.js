@@ -4,6 +4,7 @@ import PhoneInput from 'react-phone-input-2'; // Import Phone Input
 import 'react-phone-input-2/lib/style.css'; // Import Phone Input CSS
 import { Form, Button, Container, Row, Col } from "react-bootstrap"; // Bootstrap imports
 import 'bootstrap/dist/css/bootstrap.min.css'; // Bootstrap 5 CSS
+import '../../styles/Login.css'
 import { displayError } from "../../utils";
 import {
   getAuth,
@@ -135,13 +136,14 @@ export default ({ changeToLogin }) => {
   return (
     <Container fluid className="d-flex align-items-center justify-content-center vh-100">
       <Row className="d-flex align-items-center justify-content-center" style={{ width: "100%" }}>
-        <Col xs={12} md={6} lg={5} className="p-4 border rounded shadow" style={{ backgroundColor: "#fff" }}>
+        <Col xs={12} md={6} lg={5} className="p-4 border rounded shadow" id="verticalHexagon">
           <h2 className="text-center mb-4" style={{ fontSize: "2.5rem", fontWeight: "bold" }}>Sign Up</h2>
           <Form onSubmit={verifyAndCreateAccount}>
             <Form.Group className="mb-3">
               <Form.Label>First Name</Form.Label>
               <Form.Control
                 type="text"
+                className="customInput"
                 placeholder="Enter first name"
                 value={firstname}
                 onChange={(e) => setFirstname(e.target.value)}
@@ -152,6 +154,7 @@ export default ({ changeToLogin }) => {
               <Form.Label>Last Name</Form.Label>
               <Form.Control
                 type="text"
+                className="customInput"
                 placeholder="Enter last name"
                 value={lastname}
                 onChange={(e) => setLastname(e.target.value)}
@@ -162,6 +165,7 @@ export default ({ changeToLogin }) => {
               <Form.Label>Handle</Form.Label>
               <Form.Control
                 type="text"
+                className="customInput"
                 placeholder="Enter a unique handle"
                 value={handle}
                 onChange={(e) => setHandle(e.target.value)}
@@ -172,19 +176,23 @@ export default ({ changeToLogin }) => {
               <Form.Label>Email</Form.Label>
               <Form.Control
                 type="email"
+                className="customInput"
                 placeholder="Enter email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </Form.Group>
-            <Form.Group className="mb-3">
+            <Form.Group className="mb-3 phoneInputContainer">
               <Form.Label>Phone Number</Form.Label>
               <PhoneInput
                 country={'us'} // Default country (can be changed)
                 value={phoneNumber}
-                onChange={phone => setPhoneNumber(phone)}
-                inputStyle={{ width: "100%" }} // Make sure it aligns with other form controls
+                onChange={(phone) => setPhoneNumber(phone)}
+                containerClass="phoneInputContainer" // Container styling
+                inputClass="customInput" // Apply the .customInput styling
+                buttonClass="flagDropdown" // Apply a class for the dropdown button styling
+                dropdownClass="countryList" // Apply a class for the dropdown list styling
                 required
               />
             </Form.Group>
@@ -192,6 +200,7 @@ export default ({ changeToLogin }) => {
               <Form.Label>Password</Form.Label>
               <Form.Control
                 type="password"
+                className="customInput"
                 placeholder="Enter password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -203,7 +212,7 @@ export default ({ changeToLogin }) => {
             {!isCodeSent ? (
               <Button
                 variant="primary"
-                className="w-100 mt-3"
+                className="loginButton w-100 mt-3"
                 onClick={sendVerificationCode}
               >
                 Send Verification Code
@@ -213,7 +222,7 @@ export default ({ changeToLogin }) => {
                 <Form.Group className="mt-3 mb-3">
                   <Form.Label>Verification Code</Form.Label>
                   <Form.Control
-                    type="text"
+                    className="loginButton"
                     placeholder="Enter the verification code"
                     value={code}
                     onChange={(e) => setCode(e.target.value)}

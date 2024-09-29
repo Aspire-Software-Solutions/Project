@@ -125,7 +125,7 @@ export default ({ changeToSignup }) => {
 
   return (
     <Container fluid className="d-flex align-items-center justify-content-center" id="overallContainer">
-      <Row className="d-flex align-items-center justify-content-center" style={{ width: "100%" }}>
+      <Row className="d-flex align-items-center justify-content-center">
         {/* Logo Column */}
         <Col xs={12} md={6} className="d-none d-sm-block d-flex justify-content-center align-items-center">
           <img src={companyLogo} className="col-md-8 col-lg-6" alt="Company Logo" />

@@ -22,7 +22,7 @@
     transition: transform 0.3s, box-shadow 0.3s;
     box-sizing: border-box; /* Ensures padding is included in width/height calculations */
     filter: drop-shadow(16px 16px);
-}   
+}
 
 .customInput{
     width: 100%;
@@ -54,4 +54,86 @@
 .loginButton:hover{
     background: white;
     color: rgb(24, 24, 24);
+}
+
+/* Container for the phone input component to maintain 100% width */
+.phoneInputContainer {
+    width: 100%;
+    position: relative;
+}
+
+/* Overall PhoneInput container to ensure it's taking full width */
+.phoneInputContainer .react-tel-input {
+    width: 100% !important; /* Make sure the entire PhoneInput component is 100% width */
+}
+
+/* Styling for the input field to ensure there's space after the country code */
+.phoneInputContainer .react-tel-input .form-control {
+    padding-left: 60px !important; /* Increase left padding to add space for the flag */
+    padding-right: 15px !important; /* Add a bit of space on the right side too */
+    width: calc(100% - 60px) !important; /* Adjust width to account for the padding */
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 5px !important;
+    font-size: 1rem !important;
+    outline: none !important;
+    box-shadow: none !important;
+    transition: all 0.3s ease !important;
+}
+
+/* Placeholder styling */
+.phoneInputContainer .react-tel-input .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Focus styling to match the .customInput focus */
+.phoneInputContainer .react-tel-input .form-control:focus {
+    color: #FFF !important;
+    background: rgb(114, 0, 0) !important; /* Darker background on focus */
+    border-bottom: 2px solid #FF4500 !important; /* Add border-bottom to replicate the focus style */
+}
+
+/* Country code dropdown button styling */
+.phoneInputContainer .flag-dropdown {
+    background: rgba(255, 255, 255, 0.1) !important; /* Default background */
+    border: none !important;
+    border-radius: 5px 0 0 5px !important; /* Rounded corner on the left side to match the input */
+    cursor: pointer !important;
+    height: 100% !important;
+    transition: background 0.3s ease; /* Smooth transition for visual change */
+    padding-right: 10px !important; /* Add space between the dropdown and input */
+}
+
+/* Hover state for the country code dropdown button */
+.phoneInputContainer .flag-dropdown:hover {
+    background: #5F0000 !important; /* Change background color on hover */
+}
+
+/* Active state for the country code dropdown button (when clicking or holding click) */
+.phoneInputContainer .flag-dropdown:active {
+    background: #5F0000 !important; /* Change background color when active */
+}
+
+/* Customize the dropdown list for selecting country code */
+.countryList {
+    background: rgb(114, 0, 0) !important;
+    color: white !important;
+    border-radius: 5px !important;
+    max-height: 200px !important; /* Max height for comfortable view */
+    overflow-y: auto !important; /* Scroll if there are too many options */
+    border: none !important;
+}
+
+/* Country list item styling */
+.countryList .country {
+    padding: 0.5rem !important;
+    color: white !important;
+}
+
+/* Hover effect for country list items */
+.countryList .country:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
 }
