@@ -2,44 +2,43 @@ import styled, { css } from "styled-components";
 
 export default styled.form`
   width: 380px;
-  border: 1px solid ${(props) => props.theme.tertiaryColor};
-  padding: 2rem;
-  border-radius: 10px;
+  height: 500px;
+  background-color: ${(props) => props.theme.backgroundColor || "#720000"};
+  clip-path: polygon(50% 5%, 93% 25%, 93% 75%, 50% 95%, 7% 75%, 7% 25%);
+  position: relative;
+  padding: 6rem 2rem 2rem 2rem; /* Increased top padding */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; /* Start from the top */
+  transition: transform 0.3s, box-shadow 0.3s;
 
-  span {
-    text-align: center;
-    display: block;
-    margin-bottom: 0.5rem;
-    color: ${(props) => props.theme.secondaryColor};
+  /* Adjusted to position content within the square portion */
+  & > * {
+    max-width: 80%;
   }
 
-  .group-input {
-    display: flex;
-    justify-content: space-between;
-
-    div:nth-child(1) {
-      margin-right: 1rem;
-    }
-  }
-
-  ${(props) =>
-    props.lg &&
-    css`
-      width: 98%;
-      border: none;
-      border-radius: none;
-    `}
-
+  /* Center the form */
   ${(props) =>
     props.center &&
     css`
       position: absolute;
       top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      right: 15%; /* Move form to the right */
+      transform: translateY(-50%);
     `}
 
-@media screen and (max-width: 400px) {
+
+  /* Responsive design */
+  @media screen and (max-width: 400px) {
     width: 360px;
+  }
+
+  /* Additional styles */
+  span {
+    text-align: center;
+    display: block;
+    margin: 0;
+    color: ${(props) => props.theme.secondaryColor || "#FFFFFF"};
   }
 `;

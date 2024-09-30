@@ -4,16 +4,18 @@ import Signup from "./Signup";
 
 const Auth = () => {
   const [authAction, setAuthAction] = useState("LOGIN");
+  const [user, setUser] = useState(null);  // Hold the user info for 2FA
+
   const changeToLogin = () => setAuthAction("LOGIN");
   const changeToSignup = () => setAuthAction("SIGNUP");
 
   return (
     <>
       {authAction === "LOGIN" ? (
-        <Login changeToSignup={changeToSignup} />
-      ) : (
-        <Signup changeToLogin={changeToLogin} />
-      )}
+        <Login changeToSignup={changeToSignup} setUser={setUser} setAuthAction={setAuthAction} />
+      ) : authAction === "SIGNUP" ? (
+        <Signup changeToLogin={changeToLogin} setUser={setUser} />
+      ) : null}
     </>
   );
 };
