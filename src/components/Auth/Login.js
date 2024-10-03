@@ -65,7 +65,7 @@ export default ({ changeToSignup }) => {
       toast.error("Multi-factor resolver is missing.");
       return;
     }
-
+  
     if (!window.recaptchaVerifier) {
       window.recaptchaVerifier = new RecaptchaVerifier(
         auth,
@@ -81,22 +81,25 @@ export default ({ changeToSignup }) => {
         }
       );
     }
-
+    
+  
     try {
       const phoneInfoOptions = {
-        multiFactorHint: resolver.hints[selectedIndex], 
-        session: resolver.session, 
+        multiFactorHint: resolver.hints[selectedIndex],
+        session: resolver.session,
       };
-
+  
       const phoneAuthProvider = new PhoneAuthProvider(auth);
       const verificationId = await phoneAuthProvider.verifyPhoneNumber(phoneInfoOptions, window.recaptchaVerifier);
       setVerificationId(verificationId);
       toast.success("Verification code sent to your phone.");
     } catch (error) {
       toast.error("Failed to send verification code. Please try again.");
-      window.recaptchaVerifier.clear();
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+      }
     }
-  };
+  };  
 
   // Verify the SMS code entered by the user
   const verifyCode = async () => {
