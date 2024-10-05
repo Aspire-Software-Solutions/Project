@@ -150,6 +150,11 @@ const Nav = () => {
           </NavLink>
         </li>
         <li>
+        <NavLink activeClassName="selected" to="/ContentModeration">
+            <ExploreIcon /> <span>MODERATION</span>
+          </NavLink>
+        </li>
+        <li>
           {/* Show the profile link even before the handle is loaded */}
           {user ? (
             <NavLink activeClassName="selected" to={handle ? `/${handle}` : "/"}>

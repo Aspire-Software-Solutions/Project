@@ -26,6 +26,8 @@ export default ({ changeToSignup }) => {
   const [verificationId, setVerificationId] = useState(null); // For storing verification ID
   const [resolver, setResolver] = useState(null); // Multi-factor resolver
   const [selectedIndex, setSelectedIndex] = useState(0); // Index of selected 2FA method
+  const [sendCodeDisabled, setSendCodeDisabled] = useState(false);  // Added state hook for disabling the send button
+  const [countdown, setCountdown] = useState(15);  // Added state hook for countdown
 
   useEffect(() => {
     return () => {
@@ -34,6 +36,14 @@ export default ({ changeToSignup }) => {
       }
     };
   }, []);
+
+  // Automatically send verification code once resolver is set
+  useEffect(() => {
+    if (resolver) {
+      sendVerificationCode(resolver);
+    }
+  }, [resolver]);
+
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -50,10 +60,13 @@ export default ({ changeToSignup }) => {
       toast.success("You are logged in.");
     } catch (error) {
       if (error.code === "auth/multi-factor-auth-required") {
-        const resolver = getMultiFactorResolver(auth, error);
-        setResolver(resolver);
+        // Extract and store the multi-factor resolver properly
+        const resolverInstance = getMultiFactorResolver(auth, error);
+        setResolver(resolverInstance);  // Set resolver to the state
         toast.info("2FA required. Sending verification code.");
-      } else {
+        sendVerificationCode(resolverInstance);  // Automatically send verification code if 2FA is required
+      } 
+      else {
         return displayError(error);
       }
     }
@@ -84,6 +97,19 @@ export default ({ changeToSignup }) => {
     
   
     try {
+      setSendCodeDisabled(true);
+      setCountdown(15);
+      const timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev === 1) {
+            clearInterval(timer);
+            setSendCodeDisabled(false);
+            return 15;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
       const phoneInfoOptions = {
         multiFactorHint: resolver.hints[selectedIndex],
         session: resolver.session,
@@ -157,7 +183,9 @@ export default ({ changeToSignup }) => {
             {/* Second factor authentication (2FA): send and verify SMS code */}
             {resolver && (
               <>
-                <Button onClick={sendVerificationCode} className="mt-3">Send Verification Code</Button>
+                <Button onClick={sendVerificationCode} className="mt-3" disabled={sendCodeDisabled}>
+                  {sendCodeDisabled ? `Send Verification Code (${countdown}s)` : "Send Verification Code"}
+                </Button>
                 <Form.Group className="mt-3">
                   <Form.Label>Verification Code</Form.Label>
                   <Form.Control 
