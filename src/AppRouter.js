@@ -15,27 +15,33 @@ import Notifications from "./pages/Notifications";
 import Explore from "./pages/Explore";
 import Suggestion from "./pages/Suggestion";
 import EditProfile from "./components/Profile/EditProfile";
+import ModerationDashboard from "./pages/ContentModeration";
 
 const AppRouter = () => {
   return (
     <Router>
-      <Nav />
-      <Layout>
-        <Switch>
-          <Route exact path="/" component={Home} />
-          <Route exact path="/explore" component={Explore} />
-          <Route exact path="/notifications" component={Notifications} />
-          <Route exact path="/bookmarks" component={Bookmarks} />
-          <Route
-            exact path={`/:handle/status/:quickieId`} // Renamed for consistency
-            component={MasterQuickie} // Renamed for consistency
-          />
-          <Route exact path={`/settings/profile`} component={EditProfile} />
-          <Route exact path={`/:handle`} component={Profile} />
-          <Redirect from="*" to="/" />
-        </Switch>
-        <Suggestion />
-      </Layout>
+      <Switch>
+        {/* Separate route for Content Moderation */}
+        <Route path="/ContentModeration" component={ModerationDashboard} />
+
+        {/* General Application Routes */}
+        <Route>
+          <Nav />
+          <Layout>
+            <Switch>
+              <Route exact path="/" component={Home} />
+              <Route exact path="/explore" component={Explore} />
+              <Route exact path="/notifications" component={Notifications} />
+              <Route exact path="/bookmarks" component={Bookmarks} />
+              <Route exact path="/settings/profile" component={EditProfile} />
+              <Route exact path="/:handle/status/:quickieId" component={MasterQuickie} />
+              <Route exact path="/:handle" component={Profile} />
+              <Redirect from="*" to="/" />
+            </Switch>
+            <Suggestion />
+          </Layout>
+        </Route>
+      </Switch>
     </Router>
   );
 };

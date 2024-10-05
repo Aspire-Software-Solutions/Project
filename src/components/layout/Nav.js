@@ -103,23 +103,28 @@ const Nav = () => {
   const [handle, setHandle] = useState(null); // Store the handle
   const db = getFirestore(); // Initialize Firestore
 
+  // FOR TESTING PURPOSES, SET TRUE FOR EVERYONE
+  const isAdmin = true;
+
   useEffect(() => {
     const fetchHandle = async () => {
       if (user) {
-        // Fetch the handle from the profiles collection using the user ID
-        const profileRef = doc(db, "profiles", user.uid); // Assuming user.uid is the document ID
-        const profileSnap = await getDoc(profileRef);
-
-        if (profileSnap.exists()) {
-          setHandle(profileSnap.data().handle); // Set the handle
-        } else {
-          console.log("No profile found!");
+        try {
+          const profileRef = doc(db, "profiles", user.uid);
+          const profileSnap = await getDoc(profileRef);
+          if (profileSnap.exists()) {
+            setHandle(profileSnap.data().handle);
+          } else {
+            console.log("No profile found!");
+          }
+        } catch (error) {
+          console.error("Error fetching profile:", error);
         }
       }
     };
-
     fetchHandle();
   }, [user, db]);
+  
 
   return (
     <Wrapper>
@@ -149,11 +154,13 @@ const Nav = () => {
             <BmIcon /> <span>Bookmarks</span>
           </NavLink>
         </li>
-        <li>
-        <NavLink activeClassName="selected" to="/ContentModeration">
-            <ExploreIcon /> <span>MODERATION</span>
-          </NavLink>
-        </li>
+        {user && isAdmin && (
+          <li>
+            <NavLink activeClassName="selected" to="/ContentModeration">
+              <span>MODERATION</span>
+            </NavLink>
+          </li>
+        )}
         <li>
           {/* Show the profile link even before the handle is loaded */}
           {user ? (
