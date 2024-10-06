@@ -8,7 +8,9 @@ const ModerationDashboard = () => {
   const [originalContent] = useState([
     { id: 1, user: '@john_doe', type: 'Text', content: 'Lorem ipsum dolor sit amet...', status: 'Pending' },
     { id: 2, user: '@jane_smith', type: 'Image', content: 'Image Content Placeholder', status: 'Approved' },
-    { id: 3, user: '@user123', type: 'Video', content: 'Video Content Placeholder', status: 'Rejected' }
+    { id: 3, user: '@user123', type: 'Video', content: 'Video Content Placeholder', status: 'Rejected' },
+    { id: 4, user: '@mark_doe', type: 'Text', content: 'Another sample text', status: 'Approved' },
+    { id: 5, user: '@lisa_smith', type: 'Image', content: 'Another image content', status: 'Rejected' }
   ]);
   const [filteredContent, setFilteredContent] = useState(originalContent);
 
@@ -30,6 +32,10 @@ const ModerationDashboard = () => {
     // Update filtered content
     setFilteredContent(updatedContent);
   };
+
+  // Filtering approved and rejected actions for view-only tables
+  const approvedContent = originalContent.filter(item => item.status === 'Approved');
+  const rejectedContent = originalContent.filter(item => item.status === 'Rejected');
 
   return (
     <>
@@ -133,6 +139,70 @@ const ModerationDashboard = () => {
                             </Button>
                           )}
                         </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+
+        <Row className="mt-4">
+          {/* Approved Actions Table */}
+          <Col xs={12} md={6}>
+            <Card>
+              <Card.Header>Recent Approved Actions</Card.Header>
+              <Card.Body>
+                <Table striped bordered hover responsive>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>User</th>
+                      <th>Type</th>
+                      <th>Content</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {approvedContent.map(item => (
+                      <tr key={item.id}>
+                        <td>{item.id}</td>
+                        <td>{item.user}</td>
+                        <td>{item.type}</td>
+                        <td>{item.content}</td>
+                        <td>{item.status}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </Card.Body>
+            </Card>
+          </Col>
+
+          {/* Rejected Actions Table */}
+          <Col xs={12} md={6}>
+            <Card>
+              <Card.Header>Recent Rejected Actions</Card.Header>
+              <Card.Body>
+                <Table striped bordered hover responsive>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>User</th>
+                      <th>Type</th>
+                      <th>Content</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rejectedContent.map(item => (
+                      <tr key={item.id}>
+                        <td>{item.id}</td>
+                        <td>{item.user}</td>
+                        <td>{item.type}</td>
+                        <td>{item.content}</td>
+                        <td>{item.status}</td>
                       </tr>
                     ))}
                   </tbody>
