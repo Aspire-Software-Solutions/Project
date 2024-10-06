@@ -1,9 +1,36 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import React from 'react';
+import React, { useState } from 'react';
 import { Container, Row, Col, Card, Button, Table, Form } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 const ModerationDashboard = () => {
+  // State to manage original and filtered content
+  const [originalContent] = useState([
+    { id: 1, user: '@john_doe', type: 'Text', content: 'Lorem ipsum dolor sit amet...', status: 'Pending' },
+    { id: 2, user: '@jane_smith', type: 'Image', content: 'Image Content Placeholder', status: 'Approved' },
+    { id: 3, user: '@user123', type: 'Video', content: 'Video Content Placeholder', status: 'Rejected' }
+  ]);
+  const [filteredContent, setFilteredContent] = useState(originalContent);
+
+  // State to manage filter inputs
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [contentTypeFilter, setContentTypeFilter] = useState('All');
+
+  // Function to handle filter application
+  const handleApplyFilters = (e) => {
+    e.preventDefault(); // Prevent page reload
+
+    // Filter logic
+    const updatedContent = originalContent.filter(item => {
+      const statusMatch = statusFilter === 'All' || item.status === statusFilter;
+      const contentTypeMatch = contentTypeFilter === 'All' || item.type === contentTypeFilter;
+      return statusMatch && contentTypeMatch;
+    });
+
+    // Update filtered content
+    setFilteredContent(updatedContent);
+  };
+
   return (
     <>
       {/* Sticky Navigation Bar */}
@@ -34,10 +61,14 @@ const ModerationDashboard = () => {
             <Card>
               <Card.Header>Filters</Card.Header>
               <Card.Body>
-                <Form>
+                <Form onSubmit={handleApplyFilters}>
                   <Form.Group className="mb-3">
                     <Form.Label>Status</Form.Label>
-                    <Form.Control as="select">
+                    <Form.Control 
+                      as="select" 
+                      value={statusFilter} 
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                    >
                       <option>All</option>
                       <option>Pending</option>
                       <option>Approved</option>
@@ -47,7 +78,11 @@ const ModerationDashboard = () => {
 
                   <Form.Group className="mb-3">
                     <Form.Label>Content Type</Form.Label>
-                    <Form.Control as="select">
+                    <Form.Control 
+                      as="select" 
+                      value={contentTypeFilter} 
+                      onChange={(e) => setContentTypeFilter(e.target.value)}
+                    >
                       <option>All</option>
                       <option>Images</option>
                       <option>Videos</option>
@@ -79,45 +114,27 @@ const ModerationDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>1</td>
-                      <td>@john_doe</td>
-                      <td>Text</td>
-                      <td>Lorem ipsum dolor sit amet...</td>
-                      <td>Pending</td>
-                      <td>
-                        <Button variant="success" size="sm" className="me-2">
-                          Approve
-                        </Button>
-                        <Button variant="danger" size="sm">
-                          Reject
-                        </Button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>2</td>
-                      <td>@jane_smith</td>
-                      <td>Image</td>
-                      <td>Image Content Placeholder</td>
-                      <td>Approved</td>
-                      <td>
-                        <Button variant="danger" size="sm">
-                          Reject
-                        </Button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>3</td>
-                      <td>@user123</td>
-                      <td>Video</td>
-                      <td>Video Content Placeholder</td>
-                      <td>Rejected</td>
-                      <td>
-                        <Button variant="success" size="sm">
-                          Approve
-                        </Button>
-                      </td>
-                    </tr>
+                    {filteredContent.map(item => (
+                      <tr key={item.id}>
+                        <td>{item.id}</td>
+                        <td>{item.user}</td>
+                        <td>{item.type}</td>
+                        <td>{item.content}</td>
+                        <td>{item.status}</td>
+                        <td>
+                          {item.status !== 'Approved' && (
+                            <Button variant="success" size="sm" className="me-2">
+                              Approve
+                            </Button>
+                          )}
+                          {item.status !== 'Rejected' && (
+                            <Button variant="danger" size="sm">
+                              Reject
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </Table>
               </Card.Body>
