@@ -10,8 +10,39 @@ const ModerationDashboard = () => {
     { id: 2, user: '@jane_smith', type: 'Image', content: 'Image Content Placeholder', status: 'Approved' },
     { id: 3, user: '@user123', type: 'Video', content: 'Video Content Placeholder', status: 'Rejected' },
     { id: 4, user: '@mark_doe', type: 'Text', content: 'Another sample text', status: 'Approved' },
-    { id: 5, user: '@lisa_smith', type: 'Image', content: 'Another image content', status: 'Rejected' }
-  ]);
+    { id: 5, user: '@lisa_smith', type: 'Image', content: 'Another image content', status: 'Rejected' },
+    { id: 6, user: '@alex_jones', type: 'Text', content: 'This is a new pending text content...', status: 'Pending' },
+    { id: 7, user: '@kate_green', type: 'Image', content: 'Photo of a beautiful landscape...', status: 'Pending' },
+    { id: 8, user: '@peter_parker', type: 'Video', content: 'A short film about nature...', status: 'Pending' },
+    { id: 9, user: '@bruce_wayne', type: 'Text', content: 'An article about technology advancements...', status: 'Approved' },
+    { id: 10, user: '@clark_kent', type: 'Video', content: 'Interview clip with a tech expert...', status: 'Approved' },
+    { id: 11, user: '@diana_prince', type: 'Image', content: 'Photo from charity event...', status: 'Rejected' },
+    { id: 12, user: '@tony_stark', type: 'Video', content: 'Iron Man tech showcase...', status: 'Rejected' },
+    { id: 13, user: '@steve_rogers', type: 'Text', content: 'Historical event details...', status: 'Pending' },
+    { id: 14, user: '@natasha_romanoff', type: 'Image', content: 'Black Widow photo...', status: 'Pending' },
+    { id: 15, user: '@thor_odinson', type: 'Video', content: 'Thunderstorm documentary...', status: 'Approved' },
+    { id: 16, user: '@loki_laufeyson', type: 'Text', content: 'Mischief story...', status: 'Rejected' },
+    { id: 17, user: '@wanda_maximoff', type: 'Image', content: 'Magic trick captured...', status: 'Pending' },
+    { id: 18, user: '@vision', type: 'Text', content: 'AI perspective on human behavior...', status: 'Approved' },
+    { id: 19, user: '@sam_wilson', type: 'Video', content: 'Falcon flight footage...', status: 'Rejected' },
+    { id: 20, user: '@bucky_barnes', type: 'Text', content: 'Winter Soldier memoir...', status: 'Pending' },
+    { id: 21, user: '@tchalla', type: 'Image', content: 'Wakanda cityscape...', status: 'Approved' },
+    { id: 22, user: '@shuri', type: 'Video', content: 'Vibranium tech explanation...', status: 'Rejected' },
+    { id: 23, user: '@pepper_potts', type: 'Image', content: 'Company event photo...', status: 'Approved' },
+    { id: 24, user: '@happy_hogan', type: 'Text', content: 'Security protocol guide...', status: 'Pending' },
+    { id: 25, user: '@scott_lang', type: 'Video', content: 'Ant-man shrinking demo...', status: 'Pending' },
+    { id: 26, user: '@hope_van_dyne', type: 'Image', content: 'Wasp in action...', status: 'Approved' },
+    { id: 27, user: '@stephen_strange', type: 'Video', content: 'Mystical arts lecture...', status: 'Rejected' },
+    { id: 28, user: '@peter_quill', type: 'Text', content: 'Adventures in space...', status: 'Pending' },
+    { id: 29, user: '@gamora', type: 'Image', content: 'Photo from an alien planet...', status: 'Approved' },
+    { id: 30, user: '@rocket_raccoon', type: 'Text', content: 'Raccoon guide for building tech...', status: 'Rejected' },
+    { id: 31, user: '@groot', type: 'Image', content: 'Tree growth stages...', status: 'Pending' },
+    { id: 32, user: '@drax', type: 'Text', content: 'A story of strength and resilience...', status: 'Rejected' },
+    { id: 33, user: '@mantis', type: 'Video', content: 'Empathy and emotion demonstration...', status: 'Pending' },
+    { id: 34, user: '@nebula', type: 'Text', content: 'Cybernetics advancements...', status: 'Approved' },
+    { id: 35, user: '@nick_fury', type: 'Video', content: 'SHIELD training montage...', status: 'Approved' }
+]);
+
   
   // State to manage filter inputs
   const [statusFilter, setStatusFilter] = useState('All');
@@ -21,9 +52,9 @@ const ModerationDashboard = () => {
   const filteredContent = originalContent.filter(item => {
     const isPending = item.status === 'Pending';
     const statusMatch = statusFilter === 'All' || item.status === statusFilter;
-    const contentTypeMatch = contentTypeFilter === 'All' || item.type === contentTypeFilter;
+    const contentTypeMatch = contentTypeFilter === 'All' || item.type.toLowerCase() === contentTypeFilter.toLowerCase().trim();
     return isPending && statusMatch && contentTypeMatch;
-  });
+  });  
 
   const approvedContent = originalContent.filter(item => item.status === 'Approved');
   const rejectedContent = originalContent.filter(item => item.status === 'Rejected');
@@ -106,8 +137,8 @@ const ModerationDashboard = () => {
                       onChange={(e) => setContentTypeFilter(e.target.value)}
                     >
                       <option>All</option>
-                      <option>Images</option>
-                      <option>Videos</option>
+                      <option>Image</option>
+                      <option>Video</option>
                       <option>Text</option>
                     </Form.Control>
                   </Form.Group>
