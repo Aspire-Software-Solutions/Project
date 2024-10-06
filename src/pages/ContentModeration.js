@@ -5,38 +5,53 @@ import { Link } from 'react-router-dom';
 
 const ModerationDashboard = () => {
   // State to manage original and filtered content
-  const [originalContent] = useState([
+  const [originalContent, setOriginalContent] = useState([
     { id: 1, user: '@john_doe', type: 'Text', content: 'Lorem ipsum dolor sit amet...', status: 'Pending' },
     { id: 2, user: '@jane_smith', type: 'Image', content: 'Image Content Placeholder', status: 'Approved' },
     { id: 3, user: '@user123', type: 'Video', content: 'Video Content Placeholder', status: 'Rejected' },
     { id: 4, user: '@mark_doe', type: 'Text', content: 'Another sample text', status: 'Approved' },
     { id: 5, user: '@lisa_smith', type: 'Image', content: 'Another image content', status: 'Rejected' }
   ]);
-  const [filteredContent, setFilteredContent] = useState(originalContent.filter(item => item.status === 'Pending'));
-
+  
   // State to manage filter inputs
   const [statusFilter, setStatusFilter] = useState('All');
   const [contentTypeFilter, setContentTypeFilter] = useState('All');
 
-  // Function to handle filter application
-  const handleApplyFilters = (e) => {
-    e.preventDefault(); // Prevent page reload
+  // Filtering content for tables
+  const filteredContent = originalContent.filter(item => {
+    const isPending = item.status === 'Pending';
+    const statusMatch = statusFilter === 'All' || item.status === statusFilter;
+    const contentTypeMatch = contentTypeFilter === 'All' || item.type === contentTypeFilter;
+    return isPending && statusMatch && contentTypeMatch;
+  });
 
-    // Filter logic to exclude "Approved" and "Rejected" items from moderation
-    const updatedContent = originalContent.filter(item => {
-      const isPending = item.status === 'Pending';
-      const statusMatch = statusFilter === 'All' || item.status === statusFilter;
-      const contentTypeMatch = contentTypeFilter === 'All' || item.type === contentTypeFilter;
-      return isPending && statusMatch && contentTypeMatch;
-    });
-
-    // Update filtered content
-    setFilteredContent(updatedContent);
-  };
-
-  // Filtering approved and rejected actions for view-only tables
   const approvedContent = originalContent.filter(item => item.status === 'Approved');
   const rejectedContent = originalContent.filter(item => item.status === 'Rejected');
+
+  // Function to handle approve/reject actions
+  const handleModerationAction = (id, action) => {
+    setOriginalContent(prevContent => 
+      prevContent.map(item => {
+        if (item.id === id) {
+          if (action === 'approve') {
+            console.log(`${item.user} report has been accepted`);
+            return { ...item, status: 'Approved' };
+          } else if (action === 'reject') {
+            console.log(`${item.user} report has been rejected`);
+            return { ...item, status: 'Rejected' };
+          }
+        }
+        return item;
+      })
+    );
+  };
+
+  // Function to handle filter application
+  const handleApplyFilters = () => {
+    // This function currently doesn't need to do much as the filter is applied via state,
+    // but it's defined here to prevent errors and can be extended if needed.
+    console.log('Filters applied:', { statusFilter, contentTypeFilter });
+  };
 
   return (
     <>
@@ -68,7 +83,7 @@ const ModerationDashboard = () => {
             <Card>
               <Card.Header>Filters</Card.Header>
               <Card.Body>
-                <Form onSubmit={handleApplyFilters}>
+                <Form onSubmit={(e) => e.preventDefault()}>
                   <Form.Group className="mb-3">
                     <Form.Label>Status</Form.Label>
                     <Form.Control 
@@ -97,7 +112,7 @@ const ModerationDashboard = () => {
                     </Form.Control>
                   </Form.Group>
 
-                  <Button variant="primary" type="submit">
+                  <Button variant="primary" onClick={handleApplyFilters}>
                     Apply Filters
                   </Button>
                 </Form>
@@ -131,10 +146,19 @@ const ModerationDashboard = () => {
                         <td>
                           {item.status === 'Pending' && (
                             <>
-                              <Button variant="success" size="sm" className="me-2">
+                              <Button 
+                                variant="success" 
+                                size="sm" 
+                                className="me-2"
+                                onClick={() => handleModerationAction(item.id, 'approve')}
+                              >
                                 Approve
                               </Button>
-                              <Button variant="danger" size="sm">
+                              <Button 
+                                variant="danger" 
+                                size="sm"
+                                onClick={() => handleModerationAction(item.id, 'reject')}
+                              >
                                 Reject
                               </Button>
                             </>
