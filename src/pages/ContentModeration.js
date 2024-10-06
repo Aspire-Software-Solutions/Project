@@ -12,7 +12,7 @@ const ModerationDashboard = () => {
     { id: 4, user: '@mark_doe', type: 'Text', content: 'Another sample text', status: 'Approved' },
     { id: 5, user: '@lisa_smith', type: 'Image', content: 'Another image content', status: 'Rejected' }
   ]);
-  const [filteredContent, setFilteredContent] = useState(originalContent);
+  const [filteredContent, setFilteredContent] = useState(originalContent.filter(item => item.status === 'Pending'));
 
   // State to manage filter inputs
   const [statusFilter, setStatusFilter] = useState('All');
@@ -22,11 +22,12 @@ const ModerationDashboard = () => {
   const handleApplyFilters = (e) => {
     e.preventDefault(); // Prevent page reload
 
-    // Filter logic
+    // Filter logic to exclude "Approved" and "Rejected" items from moderation
     const updatedContent = originalContent.filter(item => {
+      const isPending = item.status === 'Pending';
       const statusMatch = statusFilter === 'All' || item.status === statusFilter;
       const contentTypeMatch = contentTypeFilter === 'All' || item.type === contentTypeFilter;
-      return statusMatch && contentTypeMatch;
+      return isPending && statusMatch && contentTypeMatch;
     });
 
     // Update filtered content
@@ -128,15 +129,15 @@ const ModerationDashboard = () => {
                         <td>{item.content}</td>
                         <td>{item.status}</td>
                         <td>
-                          {item.status !== 'Approved' && (
-                            <Button variant="success" size="sm" className="me-2">
-                              Approve
-                            </Button>
-                          )}
-                          {item.status !== 'Rejected' && (
-                            <Button variant="danger" size="sm">
-                              Reject
-                            </Button>
+                          {item.status === 'Pending' && (
+                            <>
+                              <Button variant="success" size="sm" className="me-2">
+                                Approve
+                              </Button>
+                              <Button variant="danger" size="sm">
+                                Reject
+                              </Button>
+                            </>
                           )}
                         </td>
                       </tr>
