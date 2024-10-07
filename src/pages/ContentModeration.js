@@ -6,42 +6,142 @@ import { Link } from 'react-router-dom';
 const ModerationDashboard = () => {
   // State to manage original and filtered content
   const [originalContent, setOriginalContent] = useState([
-    { id: 1, user: '@john_doe', type: 'Text', content: 'Lorem ipsum dolor sit amet...', status: 'Pending', numReports: 3 },
-    { id: 2, user: '@jane_smith', type: 'Image', content: 'Image Content Placeholder', status: 'Approved', numReports: 1 },
-    { id: 3, user: '@user123', type: 'Video', content: 'Video Content Placeholder', status: 'Rejected', numReports: 2 },
-    { id: 4, user: '@mark_doe', type: 'Text', content: 'Another sample text', status: 'Approved', numReports: 4 },
-    { id: 5, user: '@lisa_smith', type: 'Image', content: 'Another image content', status: 'Rejected', numReports: 5 },
-    { id: 6, user: '@alex_jones', type: 'Text', content: 'This is a new pending text content...', status: 'Pending', numReports: 6 },
-    { id: 7, user: '@kate_green', type: 'Image', content: 'Photo of a beautiful landscape...', status: 'Pending', numReports: 2 },
-    { id: 8, user: '@peter_parker', type: 'Video', content: 'A short film about nature...', status: 'Pending', numReports: 1 },
-    { id: 9, user: '@bruce_wayne', type: 'Text', content: 'An article about technology advancements...', status: 'Approved', numReports: 3 },
-    { id: 10, user: '@clark_kent', type: 'Video', content: 'Interview clip with a tech expert...', status: 'Approved', numReports: 7 },
-    { id: 11, user: '@diana_prince', type: 'Image', content: 'Photo from charity event...', status: 'Rejected', numReports: 4 },
-    { id: 12, user: '@tony_stark', type: 'Video', content: 'Iron Man tech showcase...', status: 'Rejected', numReports: 5 },
-    { id: 13, user: '@steve_rogers', type: 'Text', content: 'Historical event details...', status: 'Pending', numReports: 3 },
-    { id: 14, user: '@natasha_romanoff', type: 'Image', content: 'Black Widow photo...', status: 'Pending', numReports: 8 },
-    { id: 15, user: '@thor_odinson', type: 'Video', content: 'Thunderstorm documentary...', status: 'Approved', numReports: 2 },
-    { id: 16, user: '@loki_laufeyson', type: 'Text', content: 'Mischief story...', status: 'Rejected', numReports: 6 },
-    { id: 17, user: '@wanda_maximoff', type: 'Image', content: 'Magic trick captured...', status: 'Pending', numReports: 1 },
-    { id: 18, user: '@vision', type: 'Text', content: 'AI perspective on human behavior...', status: 'Approved', numReports: 2 },
-    { id: 19, user: '@sam_wilson', type: 'Video', content: 'Falcon flight footage...', status: 'Rejected', numReports: 5 },
-    { id: 20, user: '@bucky_barnes', type: 'Text', content: 'Winter Soldier memoir...', status: 'Pending', numReports: 4 },
-    { id: 21, user: '@tchalla', type: 'Image', content: 'Wakanda cityscape...', status: 'Approved', numReports: 3 },
-    { id: 22, user: '@shuri', type: 'Video', content: 'Vibranium tech explanation...', status: 'Rejected', numReports: 7 },
-    { id: 23, user: '@pepper_potts', type: 'Image', content: 'Company event photo...', status: 'Approved', numReports: 1 },
-    { id: 24, user: '@happy_hogan', type: 'Text', content: 'Security protocol guide...', status: 'Pending', numReports: 5 },
-    { id: 25, user: '@scott_lang', type: 'Video', content: 'Ant-man shrinking demo...', status: 'Pending', numReports: 2 },
-    { id: 26, user: '@hope_van_dyne', type: 'Image', content: 'Wasp in action...', status: 'Approved', numReports: 4 },
-    { id: 27, user: '@stephen_strange', type: 'Video', content: 'Mystical arts lecture...', status: 'Rejected', numReports: 6 },
-    { id: 28, user: '@peter_quill', type: 'Text', content: 'Adventures in space...', status: 'Pending', numReports: 1 },
-    { id: 29, user: '@gamora', type: 'Image', content: 'Photo from an alien planet...', status: 'Approved', numReports: 3 },
-    { id: 30, user: '@rocket_raccoon', type: 'Text', content: 'Raccoon guide for building tech...', status: 'Rejected', numReports: 4 },
-    { id: 31, user: '@groot', type: 'Image', content: 'Tree growth stages...', status: 'Pending', numReports: 2 },
-    { id: 32, user: '@drax', type: 'Text', content: 'A story of strength and resilience...', status: 'Rejected', numReports: 5 },
-    { id: 33, user: '@mantis', type: 'Video', content: 'Empathy and emotion demonstration...', status: 'Pending', numReports: 3 },
-    { id: 34, user: '@nebula', type: 'Text', content: 'Cybernetics advancements...', status: 'Approved', numReports: 7 },
-    { id: 35, user: '@nick_fury', type: 'Video', content: 'SHIELD training montage...', status: 'Approved', numReports: 6 }
+    { 
+      id: 1, 
+      user: '@john_doe', 
+      type: 'Text', 
+      content: 'Lorem ipsum dolor sit amet...', 
+      status: 'Pending', 
+      numReports: 3, 
+      comments: [
+        { date: '12-04-24 14:30', user: '@reporter1', message: 'Inappropriate content' },
+        { date: '13-04-24 11:10', user: '@reporter2', message: 'Contains offensive language' },
+      ]
+    },
+    { 
+      id: 2, 
+      user: '@jane_smith', 
+      type: 'Image', 
+      content: 'gs://fbproject-c27b4.appspot.com/images/MV5BMTY3Nzg0NDExNF5BMl5BanBnXkFtZTgwMDM4MTg1NDE@._V1_.jpg', 
+      status: 'Approved', 
+      numReports: 1, 
+      comments: [
+        { date: '14-04-24 09:50', user: '@reporter3', message: 'Unwanted promotional content' },
+      ]
+    },
+    { 
+      id: 3, 
+      user: '@user123', 
+      type: 'Video', 
+      content: 'Video Content Placeholder', 
+      status: 'Rejected', 
+      numReports: 2, 
+      comments: [
+        { date: '15-04-24 18:45', user: '@reporter4', message: 'Spam video content' },
+      ]
+    },
+    { 
+      id: 4, 
+      user: '@mark_doe', 
+      type: 'Text', 
+      content: 'Another sample text', 
+      status: 'Approved', 
+      numReports: 4, 
+      comments: [
+        { date: '16-04-24 12:30', user: '@reporter5', message: 'Plagiarized content' },
+      ]
+    },
+    { 
+      id: 5, 
+      user: '@lisa_smith', 
+      type: 'Image', 
+      content: 'gs://fbproject-c27b4.appspot.com/images/MV5BMTY3Nzg0NDExNF5BMl5BanBnXkFtZTgwMDM4MTg1NDE@._V1_.jpg', 
+      status: 'Rejected', 
+      numReports: 5, 
+      comments: [
+        { date: '17-04-24 10:00', user: '@reporter6', message: 'Not suitable for children' },
+      ]
+    },
+    { 
+      id: 6, 
+      user: '@alex_jones', 
+      type: 'Text', 
+      content: 'This is a new pending text content...', 
+      status: 'Pending', 
+      numReports: 6, 
+      comments: [
+        { date: '18-04-24 14:50', user: '@reporter7', message: 'Misleading information' },
+      ]
+    },
+    { 
+      id: 7, 
+      user: '@kate_green', 
+      type: 'Image', 
+      content: 'gs://fbproject-c27b4.appspot.com/images/MV5BMTY3Nzg0NDExNF5BMl5BanBnXkFtZTgwMDM4MTg1NDE@._V1_.jpg', 
+      status: 'Pending', 
+      numReports: 2, 
+      comments: [
+        { date: '19-04-24 08:20', user: '@reporter8', message: 'Privacy concern' },
+      ]
+    },
+    { 
+      id: 8, 
+      user: '@peter_parker', 
+      type: 'Video', 
+      content: 'A short film about nature...', 
+      status: 'Pending', 
+      numReports: 1, 
+      comments: [
+        { date: '20-04-24 17:30', user: '@reporter9', message: 'Irrelevant content' },
+      ]
+    },
+    { 
+      id: 9, 
+      user: '@bruce_wayne', 
+      type: 'Text', 
+      content: 'An article about technology advancements...', 
+      status: 'Approved', 
+      numReports: 3, 
+      comments: [
+        { date: '21-04-24 15:00', user: '@reporter10', message: 'Plagiarized from another website' },
+      ]
+    },
+    { 
+      id: 10, 
+      user: '@clark_kent', 
+      type: 'Video', 
+      content: 'Interview clip with a tech expert...', 
+      status: 'Approved', 
+      numReports: 7, 
+      comments: [
+        { date: '22-04-24 16:10', user: '@reporter11', message: 'Contains copyrighted material' },
+      ]
+    },
+    { 
+      id: 11, 
+      user: '@diana_prince', 
+      type: 'Image', 
+      content: 'gs://fbproject-c27b4.appspot.com/images/MV5BMTY3Nzg0NDExNF5BMl5BanBnXkFtZTgwMDM4MTg1NDE@._V1_.jpg', 
+      status: 'Rejected', 
+      numReports: 4, 
+      comments: [
+        { date: '23-04-24 11:20', user: '@reporter12', message: 'Sensitive content' },
+      ]
+    },
+    { 
+      id: 12, 
+      user: '@tony_stark', 
+      type: 'Video', 
+      content: 'Iron Man tech showcase...', 
+      status: 'Rejected', 
+      numReports: 5, 
+      comments: [
+        { date: '24-04-24 09:45', user: '@reporter13', message: 'Misleading claims' },
+      ]
+    }
+    // Add additional reports as needed...
   ]);
+  
 
 
   
@@ -179,7 +279,10 @@ const ModerationDashboard = () => {
                         <td>{item.user}</td>
                         <td>{item.numReports}</td>
                         <td>{item.type}</td>
-                        <td>{item.content}</td>
+                        <td>
+                          {item.type === 'Image' ? '*image*' : 
+                          item.content.length > 50 ? `${item.content.substring(0, 50)}...` : item.content}
+                        </td>
                         <td>
                           <Button 
                             variant="info" 
@@ -221,7 +324,10 @@ const ModerationDashboard = () => {
                         <td>{item.user}</td>
                         <td>{item.numReports}</td>
                         <td>{item.type}</td>
-                        <td>{item.content}</td>
+                        <td>
+                          {item.type === 'Image' ? '*image*' : 
+                          item.content.length > 50 ? `${item.content.substring(0, 50)}...` : item.content}
+                        </td>
                         <td>{item.status}</td>
                       </tr>
                     ))}
@@ -254,7 +360,10 @@ const ModerationDashboard = () => {
                         <td>{item.user}</td>
                         <td>{item.numReports}</td>
                         <td>{item.type}</td>
-                        <td>{item.content}</td>
+                        <td>
+                          {item.type === 'Image' ? '*image*' : 
+                          item.content.length > 50 ? `${item.content.substring(0, 50)}...` : item.content}
+                        </td>
                         <td>{item.status}</td>
                       </tr>
                     ))}
