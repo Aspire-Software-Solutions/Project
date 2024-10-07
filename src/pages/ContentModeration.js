@@ -2,9 +2,23 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useState } from 'react';
 import { Container, Row, Col, Card, Button, Table, Form, Modal } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import { getStorage, ref, getDownloadURL } from "firebase/storage";
 
 const ModerationDashboard = () => {
-  // State to manage original and filtered content
+
+  // Init storage (needed for handling images and videos)
+  const storage = getStorage();
+
+  // State to manage filter inputs
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [contentTypeFilter, setContentTypeFilter] = useState('All');
+  const [imageUrl, setImageUrl] = useState('');
+
+  // State for handling the modal
+  const [showModal, setShowModal] = useState(false);
+  const [selectedReport, setSelectedReport] = useState(null);
+
+  // State to manage original and filtered content (FAKE CONTENT)
   const [originalContent, setOriginalContent] = useState([
     { 
       id: 1, 
@@ -143,16 +157,6 @@ const ModerationDashboard = () => {
   ]);
   
 
-
-  
-  // State to manage filter inputs
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [contentTypeFilter, setContentTypeFilter] = useState('All');
-
-  // State for handling the modal
-  const [showModal, setShowModal] = useState(false);
-  const [selectedReport, setSelectedReport] = useState(null);
-
   // Filtering content for tables
   const filteredContent = originalContent.filter(item => {
     const isPending = item.status === 'Pending';
@@ -168,13 +172,28 @@ const ModerationDashboard = () => {
   const handleShowModal = (report) => {
     setSelectedReport(report);
     setShowModal(true);
+    if (report.type === "Image") {
+      // Fetch the public URL for the image
+      const storageRef = ref(storage, report.content);
+      getDownloadURL(storageRef)
+        .then((url) => {
+          setImageUrl(url);
+        })
+        .catch((error) => {
+          console.error("Error fetching image URL:", error);
+          setImageUrl('');
+        });
+    } else {
+      setImageUrl(''); // Reset if it's not an image
+    }
   };
 
   // Function to handle closing the modal
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedReport(null);
-  };
+    setImageUrl(''); // Clear image URL when modal is closed
+  };  
 
   // Function to handle approve/reject actions
   const handleModerationAction = (id, action) => {
@@ -375,36 +394,71 @@ const ModerationDashboard = () => {
         </Row>
       </Container>
 
-      {/* Modal for Viewing Details */}
-      <Modal show={showModal} onHide={handleCloseModal} style={{ color: 'black' }}>
+     {/* Modal for Viewing Details */}
+     <Modal show={showModal} onHide={handleCloseModal} style={{color: 'black'}}>
+      <Modal.Header closeButton>
+        <Modal.Title>
+          {selectedReport && `${selectedReport.user} Report #${selectedReport.id}`}
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        {selectedReport ? (
+          <>
+            <div>
+              <strong>Type: </strong> {selectedReport.type}
+            </div>
+            <div>
+              <strong>Content: </strong>
+              {selectedReport.type === 'Image' && imageUrl ? (
+                <img
+                  src={imageUrl}
+                  alt="Reported content"
+                  style={{ maxWidth: '100%', height: 'auto' }}
+                />
+              ) : selectedReport.type === 'Video' && imageUrl ? (
+                <video controls style={{ maxWidth: '100%', height: 'auto' }}>
+                  <source src={imageUrl} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+              ) : (
+                selectedReport.content.length > 50
+                  ? `${selectedReport.content.substring(0, 50)}...`
+                  : selectedReport.content
+              )}
+            </div>
+            <div>
+              <strong>Comments: </strong>
+              {selectedReport.comments && selectedReport.comments.length > 0 ? (
+                selectedReport.comments.map((comment, index) => (
+                  <div key={index}>
+                    {`${comment.date} - ${comment.user}: ${comment.message}`}
+                  </div>
+                ))
+              ) : (
+                <div>No comments available.</div>
+              )}
+            </div>
+          </>
+        ) : (
+          <div>Loading report details...</div>
+        )}
+      </Modal.Body>
+
+      <Modal.Footer>
         {selectedReport && (
           <>
-            <Modal.Header closeButton>
-              <Modal.Title>{`${selectedReport.user} Report #${selectedReport.id}`}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <p><strong>Type:</strong> {selectedReport.type}</p>
-              <p><strong>Content:</strong> {selectedReport.content}</p>
-              <p><strong>Comments:</strong></p>
-              <ul>
-                {selectedReport.comments && selectedReport.comments.map((comment, index) => (
-                  <li key={index}>
-                    {`${comment.date} - ${comment.user}: ${comment.message}`}
-                  </li>
-                ))}
-              </ul>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button variant="success" onClick={() => handleModerationAction(selectedReport.id, 'approve')}>
-                Approve
-              </Button>
-              <Button variant="danger" onClick={() => handleModerationAction(selectedReport.id, 'reject')}>
-                Reject
-              </Button>
-            </Modal.Footer>
+            <Button variant="success" onClick={() => handleModerationAction(selectedReport.id, 'approve')}>
+              Approve
+            </Button>
+            <Button variant="danger" onClick={() => handleModerationAction(selectedReport.id, 'reject')}>
+              Reject
+            </Button>
           </>
         )}
-      </Modal>
+      </Modal.Footer>
+    </Modal>
+
+
     </>
   );
 
