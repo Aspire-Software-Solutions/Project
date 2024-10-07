@@ -1,6 +1,6 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useState } from 'react';
-import { Container, Row, Col, Card, Button, Table, Form } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Table, Form, Modal } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 const ModerationDashboard = () => {
@@ -49,6 +49,10 @@ const ModerationDashboard = () => {
   const [statusFilter, setStatusFilter] = useState('All');
   const [contentTypeFilter, setContentTypeFilter] = useState('All');
 
+  // State for handling the modal
+  const [showModal, setShowModal] = useState(false);
+  const [selectedReport, setSelectedReport] = useState(null);
+
   // Filtering content for tables
   const filteredContent = originalContent.filter(item => {
     const isPending = item.status === 'Pending';
@@ -59,6 +63,18 @@ const ModerationDashboard = () => {
 
   const approvedContent = originalContent.filter(item => item.status === 'Approved');
   const rejectedContent = originalContent.filter(item => item.status === 'Rejected');
+
+  // Function to handle opening the modal
+  const handleShowModal = (report) => {
+    setSelectedReport(report);
+    setShowModal(true);
+  };
+
+  // Function to handle closing the modal
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedReport(null);
+  };
 
   // Function to handle approve/reject actions
   const handleModerationAction = (id, action) => {
@@ -76,6 +92,7 @@ const ModerationDashboard = () => {
         return item;
       })
     );
+    handleCloseModal(); // Close the modal after taking action
   };
 
   // Function to handle filter application
@@ -153,7 +170,6 @@ const ModerationDashboard = () => {
                       <th>Type</th>
                       <th>Content</th>
                       <th>Status</th>
-                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -164,27 +180,13 @@ const ModerationDashboard = () => {
                         <td>{item.numReports}</td>
                         <td>{item.type}</td>
                         <td>{item.content}</td>
-                        <td>{item.status}</td>
                         <td>
-                          {item.status === 'Pending' && (
-                            <>
-                              <Button 
-                                variant="success" 
-                                size="sm" 
-                                className="me-2"
-                                onClick={() => handleModerationAction(item.id, 'approve')}
-                              >
-                                Approve
-                              </Button>
-                              <Button 
-                                variant="danger" 
-                                size="sm"
-                                onClick={() => handleModerationAction(item.id, 'reject')}
-                              >
-                                Reject
-                              </Button>
-                            </>
-                          )}
+                          <Button 
+                            variant="info" 
+                            onClick={() => handleShowModal(item)}
+                          >
+                            View Details
+                          </Button>
                         </td>
                       </tr>
                     ))}
@@ -263,8 +265,41 @@ const ModerationDashboard = () => {
           </Col>
         </Row>
       </Container>
+
+      {/* Modal for Viewing Details */}
+      <Modal show={showModal} onHide={handleCloseModal} style={{ color: 'black' }}>
+        {selectedReport && (
+          <>
+            <Modal.Header closeButton>
+              <Modal.Title>{`${selectedReport.user} Report #${selectedReport.id}`}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <p><strong>Type:</strong> {selectedReport.type}</p>
+              <p><strong>Content:</strong> {selectedReport.content}</p>
+              <p><strong>Comments:</strong></p>
+              <ul>
+                {selectedReport.comments && selectedReport.comments.map((comment, index) => (
+                  <li key={index}>
+                    {`${comment.date} - ${comment.user}: ${comment.message}`}
+                  </li>
+                ))}
+              </ul>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="success" onClick={() => handleModerationAction(selectedReport.id, 'approve')}>
+                Approve
+              </Button>
+              <Button variant="danger" onClick={() => handleModerationAction(selectedReport.id, 'reject')}>
+                Reject
+              </Button>
+            </Modal.Footer>
+          </>
+        )}
+      </Modal>
     </>
   );
+
+
 };
 
 export default ModerationDashboard;
