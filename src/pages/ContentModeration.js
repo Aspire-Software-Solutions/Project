@@ -1,6 +1,8 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useState } from 'react';
-import { Container, Row, Col, Card, Button, Table, Form, Modal } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, 
+  Table, Form, Modal, Dropdown, DropdownButton 
+  } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 
@@ -175,6 +177,7 @@ const ModerationDashboard = () => {
   const handleShowModal = (report) => {
     setSelectedReport(report);
     setShowModal(true);
+    setRejectReason('');
     if (report.type === "Image") {
       // Fetch the public URL for the image
       const storageRef = ref(storage, report.content);
@@ -196,6 +199,7 @@ const ModerationDashboard = () => {
     setShowModal(false);
     setSelectedReport(null);
     setImageUrl(''); // Clear image URL when modal is closed
+    setRejectReason('');
   };  
 
   // Function to handle approve/reject actions
@@ -456,6 +460,7 @@ const ModerationDashboard = () => {
         )}
       </Modal.Body>
 
+
       <Modal.Footer>
         {selectedReport && (
           <>
@@ -464,25 +469,27 @@ const ModerationDashboard = () => {
             </Button>
 
             {/* Dropdown for rejection reasons */}
-            <Form.Group>
-              <Form.Label>Rejection Reason</Form.Label>
-              <Form.Control 
-                as="select" 
-                value={rejectReason} 
-                onChange={(e) => setRejectReason(e.target.value)}
-              >
-                <option value="">Select reason...</option>
-                <option value="dismiss">Dismiss report - There's no violation of ToS.</option>
-                <option value="warn">Remove content and warn user - There is a minor violation of ToS.</option>
-                <option value="suspend">Remove content and suspend user - There is a MAJOR violation of ToS.</option>
-              </Form.Control>
-            </Form.Group>
-
+            <DropdownButton id="dropdown-rejection" title="Reject" variant="danger">
+              <Dropdown.Item onClick={() => setRejectReason('dismiss')}>
+                Dismiss report
+                <br /><small className="text-muted">There's no violation of ToS.</small>
+              </Dropdown.Item>
+              <Dropdown.Item onClick={() => setRejectReason('warn')}>
+                Remove content and warn user
+                <br /><small className="text-muted">There is a minor violation of ToS.</small>
+              </Dropdown.Item>
+              <Dropdown.Item onClick={() => setRejectReason('suspend')}>
+                Remove content and suspend user
+                <br /><small className="text-muted">There is a MAJOR violation of ToS.</small>
+              </Dropdown.Item>
+            </DropdownButton>
+            
             <Button 
               variant="danger" 
               onClick={() => handleModerationAction(selectedReport.id, 'reject')}
+              disabled={!rejectReason} // disable button if no reason selected
             >
-              Reject
+              Confirm Rejection
             </Button>
           </>
         )}
