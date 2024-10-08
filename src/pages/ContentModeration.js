@@ -18,6 +18,9 @@ const ModerationDashboard = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
 
+  // Add state to manage rejection reason
+  const [rejectReason, setRejectReason] = useState(''); 
+
   // State to manage original and filtered content (FAKE CONTENT)
   const [originalContent, setOriginalContent] = useState([
     { 
@@ -197,6 +200,15 @@ const ModerationDashboard = () => {
 
   // Function to handle approve/reject actions
   const handleModerationAction = (id, action) => {
+    if (action === 'reject') {
+      // Make sure a reason is selected before rejecting
+      if (!rejectReason) {
+        alert('Please select a reason for rejection.');
+        return;
+      }
+      console.log(`Rejected for reason: ${rejectReason}`);
+    }
+  
     setOriginalContent(prevContent => 
       prevContent.map(item => {
         if (item.id === id) {
@@ -204,13 +216,13 @@ const ModerationDashboard = () => {
             console.log(`${item.user} report has been accepted`);
             return { ...item, status: 'Approved' };
           } else if (action === 'reject') {
-            console.log(`${item.user} report has been rejected`);
             return { ...item, status: 'Rejected' };
           }
         }
         return item;
       })
     );
+    
     handleCloseModal(); // Close the modal after taking action
   };
 
@@ -450,7 +462,26 @@ const ModerationDashboard = () => {
             <Button variant="success" onClick={() => handleModerationAction(selectedReport.id, 'approve')}>
               Approve
             </Button>
-            <Button variant="danger" onClick={() => handleModerationAction(selectedReport.id, 'reject')}>
+
+            {/* Dropdown for rejection reasons */}
+            <Form.Group>
+              <Form.Label>Rejection Reason</Form.Label>
+              <Form.Control 
+                as="select" 
+                value={rejectReason} 
+                onChange={(e) => setRejectReason(e.target.value)}
+              >
+                <option value="">Select reason...</option>
+                <option value="dismiss">Dismiss report - There's no violation of ToS.</option>
+                <option value="warn">Remove content and warn user - There is a minor violation of ToS.</option>
+                <option value="suspend">Remove content and suspend user - There is a MAJOR violation of ToS.</option>
+              </Form.Control>
+            </Form.Group>
+
+            <Button 
+              variant="danger" 
+              onClick={() => handleModerationAction(selectedReport.id, 'reject')}
+            >
               Reject
             </Button>
           </>
