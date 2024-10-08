@@ -23,6 +23,9 @@ const ModerationDashboard = () => {
   // Add state to manage rejection reason
   const [rejectReason, setRejectReason] = useState(''); 
 
+  // Add state to manage closed reports that can only viewed in a "View only"
+  const [viewOnlyMode, setViewOnlyMode] = useState(false);
+
   // State to manage original and filtered content (FAKE CONTENT)
   const [originalContent, setOriginalContent] = useState([
     { 
@@ -177,6 +180,7 @@ const ModerationDashboard = () => {
   const handleShowModal = (report) => {
     setSelectedReport(report);
     setShowModal(true);
+    setViewOnlyMode(report.status === 'Approved' || report.status === 'Rejected');  // Enable view-only mode for closed reports
     setRejectReason('');
     if (report.type === "Image") {
       // Fetch the public URL for the image
@@ -363,7 +367,15 @@ const ModerationDashboard = () => {
                           {item.type === 'Image' ? '*image*' : 
                           item.content.length > 50 ? `${item.content.substring(0, 50)}...` : item.content}
                         </td>
-                        <td>{item.status}</td>
+                        <td>
+                          {/* Render status as a button */}
+                          <Button 
+                            variant="success"  // Green button for approved status
+                            onClick={() => handleShowModal(item)}  // Open modal when clicked
+                          >
+                            {item.status}
+                          </Button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -399,7 +411,15 @@ const ModerationDashboard = () => {
                           {item.type === 'Image' ? '*image*' : 
                           item.content.length > 50 ? `${item.content.substring(0, 50)}...` : item.content}
                         </td>
-                        <td>{item.status}</td>
+                        <td>
+                          {/* Render status as a button */}
+                          <Button 
+                            variant={item.status === 'Approved' ? 'success' : 'danger'}
+                            onClick={() => handleShowModal(item)}  // Open modal when clicked
+                          >
+                            {item.status}
+                          </Button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -460,37 +480,45 @@ const ModerationDashboard = () => {
         )}
       </Modal.Body>
 
-
       <Modal.Footer>
         {selectedReport && (
           <>
-            <Button variant="success" onClick={() => handleModerationAction(selectedReport.id, 'approve')}>
-              Approve
-            </Button>
+            {!viewOnlyMode ? (
+              // Show Approve and Reject buttons if it's not view-only mode
+              <>
+                <Button variant="success" onClick={() => handleModerationAction(selectedReport.id, 'approve')}>
+                  Approve
+                </Button>
 
-            {/* Dropdown for rejection reasons */}
-            <DropdownButton id="dropdown-rejection" title="Reject" variant="danger">
-              <Dropdown.Item onClick={() => setRejectReason('dismiss')}>
-                Dismiss report
-                <br /><small className="text-muted">There's no violation of ToS.</small>
-              </Dropdown.Item>
-              <Dropdown.Item onClick={() => setRejectReason('warn')}>
-                Remove content and warn user
-                <br /><small className="text-muted">There is a minor violation of ToS.</small>
-              </Dropdown.Item>
-              <Dropdown.Item onClick={() => setRejectReason('suspend')}>
-                Remove content and suspend user
-                <br /><small className="text-muted">There is a MAJOR violation of ToS.</small>
-              </Dropdown.Item>
-            </DropdownButton>
-            
-            <Button 
-              variant="danger" 
-              onClick={() => handleModerationAction(selectedReport.id, 'reject')}
-              disabled={!rejectReason} // disable button if no reason selected
-            >
-              Confirm Rejection
-            </Button>
+                <DropdownButton id="dropdown-rejection" title="Reject" variant="danger">
+                  <Dropdown.Item onClick={() => setRejectReason('dismiss')}>
+                    Dismiss report
+                    <br /><small className="text-muted">There's no violation of ToS.</small>
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={() => setRejectReason('warn')}>
+                    Remove content and warn user
+                    <br /><small className="text-muted">There is a minor violation of ToS.</small>
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={() => setRejectReason('suspend')}>
+                    Remove content and suspend user
+                    <br /><small className="text-muted">There is a MAJOR violation of ToS.</small>
+                  </Dropdown.Item>
+                </DropdownButton>
+
+                <Button
+                  variant="danger"
+                  onClick={() => handleModerationAction(selectedReport.id, 'reject')}
+                  disabled={!rejectReason}
+                >
+                  Confirm Rejection
+                </Button>
+              </>
+            ) : (
+              // Show only the Close button in view-only mode
+              <Button variant="secondary" onClick={handleCloseModal}>
+                Close
+              </Button>
+            )}
           </>
         )}
       </Modal.Footer>
