@@ -8,16 +8,22 @@ import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { collection, onSnapshot, doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from '../firebase'; // Ensure this is your Firebase configuration file
 
-const ModerationDashboard = ({ user }) => {
+const ModerationDashboard = ({ user, isAdmin }) => {
 
-  // Admin access check
-  const checkAdminAccess = (user) => {
-    // Ensure user object exists and check isAdmin property
-    return user?.isAdmin ?? false;
+  console.log("ModerationDashboard loaded");
+  console.log("Received user prop:", user);
+
+  const checkAdminAccess = () => {
+    if (!user || !isAdmin) {
+      console.error(`Access denied. User is not an admin. isAdmin: ${isAdmin}`);
+      return false;
+    }
+    console.log("Admin access granted.");
+    return true;
   };
 
   // Run access check before any content renders
-  if (!checkAdminAccess(user)) {
+  if (!checkAdminAccess()) {
     return <h1>ACCESS DENIED</h1>;
   }
 

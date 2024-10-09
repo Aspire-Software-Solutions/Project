@@ -1,10 +1,5 @@
-import React from "react";
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Redirect,
-} from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-dom";
 import Layout from "./styles/Layout";
 import Nav from "./components/layout/Nav";
 import Home from "./pages/Home";
@@ -16,13 +11,52 @@ import Explore from "./pages/Explore";
 import Suggestion from "./pages/Suggestion";
 import EditProfile from "./components/Profile/EditProfile";
 import ModerationDashboard from "./pages/ContentModeration";
+import { getAuth } from "firebase/auth";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
 
 const AppRouter = () => {
+  const auth = getAuth();
+  const user = auth.currentUser; // Get the currently logged-in user
+  const [isAdmin, setIsAdmin] = useState(false); // Store isAdmin state
+  const [isProfileLoaded, setIsProfileLoaded] = useState(false); // Check if profile is loaded
+  const db = getFirestore(); // Initialize Firestore
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (user) {
+        try {
+          const profileRef = doc(db, "profiles", user.uid);
+          const profileSnap = await getDoc(profileRef);
+          if (profileSnap.exists()) {
+            const profileData = profileSnap.data();
+            setIsAdmin(profileData.isAdmin || false); // Set isAdmin if available
+          } else {
+            console.log("No profile found!");
+          }
+          setIsProfileLoaded(true); // Set profile as loaded
+        } catch (error) {
+          console.error("Error fetching profile:", error);
+        }
+      }
+    };
+    fetchProfile();
+  }, [user, db]);
+
+  // Only render Nav and Routes when profile is loaded to avoid flashing the wrong UI state
+  if (!isProfileLoaded) {
+    return <div>Loading...</div>; // Or add a better loading spinner here
+  }
+
   return (
     <Router>
       <Switch>
-        {/* Separate route for Content Moderation */}
-        <Route path="/ContentModeration" component={ModerationDashboard} />
+        {/* Route for Content Moderation with user and isAdmin props passed */}
+        <Route
+          path="/ContentModeration"
+          render={() => (
+            <ModerationDashboard user={user} isAdmin={isAdmin} />
+          )}
+        />
 
         {/* General Application Routes */}
         <Route>
