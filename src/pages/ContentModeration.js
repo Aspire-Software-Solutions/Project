@@ -97,33 +97,35 @@ const ModerationDashboard = () => {
 
   // Function to handle approve/reject actions
   const handleModerationAction = async (action) => {
-    const reportId = selectedReport.id; // This is the Firestore document ID (in this case, "EXAMPLE")
-
+    const reportId = selectedReport.id; // This is the Firestore document ID
+  
     try {
-        // Reference to the Firestore document
-        const reportRef = doc(db, "reports", reportId); // Use the document's ID from Firestore
-        
-        // Update the status (either 'Approved' or 'Rejected')
-        await updateDoc(reportRef, {
-            status: action === 'approve' ? 'Approved' : 'Rejected'
-        });
-
-        // Update status locally (for UI purposes)
-        setOriginalContent(prevContent => 
-            prevContent.map(item => {
-                if (item.id === reportId) {
-                    return { ...item, status: action === 'approve' ? 'Approved' : 'Rejected' };
-                }
-                return item;
-            })
-        );
-
-        handleCloseModal(); // Close the modal after updating the document
-
+      const reportRef = doc(db, "reports", reportId); // Reference to the document
+  
+      // Update the status (either 'Approved' or 'Rejected')
+      await updateDoc(reportRef, {
+        status: action === 'approve' ? 'Approved' : 'Rejected',
+        ...(action === 'reject' && { rejectReason }) // Include the rejectReason if it's a rejection
+      });
+  
+      // Update the status locally for UI purposes
+      setOriginalContent(prevContent =>
+        prevContent.map(item => {
+          if (item.id === reportId) {
+            return { ...item, status: action === 'approve' ? 'Approved' : 'Rejected' };
+          }
+          return item;
+        })
+      );
+  
+      handleCloseModal(); // Close the modal after updating
+  
     } catch (error) {
-        console.error("Error updating document:", error);
+      console.error("Error updating document:", error);
     }
   };
+  
+
 
 
   return (
@@ -380,29 +382,35 @@ const ModerationDashboard = () => {
           <>
             {!viewOnlyMode ? (
               <>
-                <Button variant="success" onClick={() => handleModerationAction(selectedReport.id, 'approve')}>
+                {/* Approve Button */}
+                <Button variant="success" onClick={() => handleModerationAction('approve')}>
                   Approve
                 </Button>
 
+                {/* Reject Dropdown and Confirm Button */}
                 <DropdownButton id="dropdown-rejection" title="Reject" variant="danger">
                   <Dropdown.Item onClick={() => setRejectReason('dismiss')}>
                     Dismiss report
-                    <br /><small className="text-muted">There's no violation of ToS.</small>
+                    <br />
+                    <small className="text-muted">There's no violation of ToS.</small>
                   </Dropdown.Item>
                   <Dropdown.Item onClick={() => setRejectReason('warn')}>
                     Remove content and warn user
-                    <br /><small className="text-muted">There is a minor violation of ToS.</small>
+                    <br />
+                    <small className="text-muted">There is a minor violation of ToS.</small>
                   </Dropdown.Item>
                   <Dropdown.Item onClick={() => setRejectReason('suspend')}>
                     Remove content and suspend user
-                    <br /><small className="text-muted">There is a MAJOR violation of ToS.</small>
+                    <br />
+                    <small className="text-muted">There is a MAJOR violation of ToS.</small>
                   </Dropdown.Item>
                 </DropdownButton>
 
+                {/* Confirm Rejection Button */}
                 <Button
                   variant="danger"
-                  onClick={() => handleModerationAction(selectedReport.id, 'reject')}
-                  disabled={!rejectReason}
+                  onClick={() => handleModerationAction('reject')}
+                  disabled={!rejectReason} // Ensure rejectReason is set before confirming
                 >
                   Confirm Rejection
                 </Button>
@@ -415,6 +423,7 @@ const ModerationDashboard = () => {
           </>
         )}
       </Modal.Footer>
+
     </Modal>
     </>
   );
