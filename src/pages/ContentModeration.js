@@ -5,7 +5,7 @@ import { Container, Row, Col, Card, Button,
   } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, doc, updateDoc } from "firebase/firestore";
 import { db } from '../firebase'; // Ensure this is your Firebase configuration file
 
 const ModerationDashboard = () => {
@@ -82,13 +82,27 @@ const ModerationDashboard = () => {
     setRejectReason('');
   };  
 
+  const handleApplyFilters = () => {
+    // Filter originalContent by the selected content type
+    const filtered = originalContent.filter(item => {
+      const isPending = item.status === 'Pending';
+      const contentTypeMatch = contentTypeFilter === 'All' || item.type.toLowerCase() === contentTypeFilter.toLowerCase().trim();
+      return isPending && contentTypeMatch;
+    });
+  
+    // Update the filtered content state with the applied filters
+    setFilteredContent(filtered);
+  };
+  
+
   // Function to handle approve/reject actions
-  const handleModerationAction = (id, action) => {
+  const handleModerationAction = async (id, action) => {
     if (action === 'reject' && !rejectReason) {
       alert('Please select a reason for rejection.');
       return;
     }
-  
+
+    // Update local state (for immediate UI update)
     setOriginalContent(prevContent => 
       prevContent.map(item => {
         if (item.id === id) {
@@ -97,13 +111,19 @@ const ModerationDashboard = () => {
         return item;
       })
     );
-    
-    handleCloseModal(); // Close the modal after taking action
-  };
 
-  // Function to handle filter application (Optional: Extend as needed)
-  const handleApplyFilters = () => {
-    console.log('Filters applied:', { statusFilter, contentTypeFilter });
+    // Update Firestore with the new status
+    try {
+      const reportRef = doc(db, "reports", id);
+      await updateDoc(reportRef, {
+        status: action === 'approve' ? 'Approved' : 'Rejected'
+      });
+      console.log(`Report ${id} has been ${action === 'approve' ? 'approved' : 'rejected'}`);
+    } catch (error) {
+      console.error("Error updating document:", error);
+    }
+
+    handleCloseModal(); // Close the modal after taking action
   };
 
   return (
