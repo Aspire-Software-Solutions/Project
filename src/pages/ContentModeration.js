@@ -1,10 +1,12 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, 
   Table, Form, Modal, Dropdown, DropdownButton 
   } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from '../firebase'; // Ensure this is your Firebase configuration file
 
 const ModerationDashboard = () => {
 
@@ -26,155 +28,30 @@ const ModerationDashboard = () => {
   // Add state to manage closed reports that can only viewed in a "View only"
   const [viewOnlyMode, setViewOnlyMode] = useState(false);
 
-  // State to manage original and filtered content (FAKE CONTENT)
-  const [originalContent, setOriginalContent] = useState([
-    { 
-      id: 1, 
-      user: '@john_doe', 
-      type: 'Text', 
-      content: 'Lorem ipsum dolor sit amet...', 
-      status: 'Pending', 
-      numReports: 3, 
-      comments: [
-        { date: '12-04-24 14:30', user: '@reporter1', message: 'Inappropriate content' },
-        { date: '13-04-24 11:10', user: '@reporter2', message: 'Contains offensive language' },
-      ]
-    },
-    { 
-      id: 2, 
-      user: '@jane_smith', 
-      type: 'Image', 
-      content: 'gs://fbproject-c27b4.appspot.com/images/MV5BMTY3Nzg0NDExNF5BMl5BanBnXkFtZTgwMDM4MTg1NDE@._V1_.jpg', 
-      status: 'Approved', 
-      numReports: 1, 
-      comments: [
-        { date: '14-04-24 09:50', user: '@reporter3', message: 'Unwanted promotional content' },
-      ]
-    },
-    { 
-      id: 3, 
-      user: '@user123', 
-      type: 'Video', 
-      content: 'Video Content Placeholder', 
-      status: 'Rejected', 
-      numReports: 2, 
-      comments: [
-        { date: '15-04-24 18:45', user: '@reporter4', message: 'Spam video content' },
-      ]
-    },
-    { 
-      id: 4, 
-      user: '@mark_doe', 
-      type: 'Text', 
-      content: 'Another sample text', 
-      status: 'Approved', 
-      numReports: 4, 
-      comments: [
-        { date: '16-04-24 12:30', user: '@reporter5', message: 'Plagiarized content' },
-      ]
-    },
-    { 
-      id: 5, 
-      user: '@lisa_smith', 
-      type: 'Image', 
-      content: 'gs://fbproject-c27b4.appspot.com/images/MV5BMTY3Nzg0NDExNF5BMl5BanBnXkFtZTgwMDM4MTg1NDE@._V1_.jpg', 
-      status: 'Rejected', 
-      numReports: 5, 
-      comments: [
-        { date: '17-04-24 10:00', user: '@reporter6', message: 'Not suitable for children' },
-      ]
-    },
-    { 
-      id: 6, 
-      user: '@alex_jones', 
-      type: 'Text', 
-      content: 'This is a new pending text content...', 
-      status: 'Pending', 
-      numReports: 6, 
-      comments: [
-        { date: '18-04-24 14:50', user: '@reporter7', message: 'Misleading information' },
-      ]
-    },
-    { 
-      id: 7, 
-      user: '@kate_green', 
-      type: 'Image', 
-      content: 'gs://fbproject-c27b4.appspot.com/images/MV5BMTY3Nzg0NDExNF5BMl5BanBnXkFtZTgwMDM4MTg1NDE@._V1_.jpg', 
-      status: 'Pending', 
-      numReports: 2, 
-      comments: [
-        { date: '19-04-24 08:20', user: '@reporter8', message: 'Privacy concern' },
-      ]
-    },
-    { 
-      id: 8, 
-      user: '@peter_parker', 
-      type: 'Video', 
-      content: 'A short film about nature...', 
-      status: 'Pending', 
-      numReports: 1, 
-      comments: [
-        { date: '20-04-24 17:30', user: '@reporter9', message: 'Irrelevant content' },
-      ]
-    },
-    { 
-      id: 9, 
-      user: '@bruce_wayne', 
-      type: 'Text', 
-      content: 'An article about technology advancements...', 
-      status: 'Approved', 
-      numReports: 3, 
-      comments: [
-        { date: '21-04-24 15:00', user: '@reporter10', message: 'Plagiarized from another website' },
-      ]
-    },
-    { 
-      id: 10, 
-      user: '@clark_kent', 
-      type: 'Video', 
-      content: 'Interview clip with a tech expert...', 
-      status: 'Approved', 
-      numReports: 7, 
-      comments: [
-        { date: '22-04-24 16:10', user: '@reporter11', message: 'Contains copyrighted material' },
-      ]
-    },
-    { 
-      id: 11, 
-      user: '@diana_prince', 
-      type: 'Image', 
-      content: 'gs://fbproject-c27b4.appspot.com/images/MV5BMTY3Nzg0NDExNF5BMl5BanBnXkFtZTgwMDM4MTg1NDE@._V1_.jpg', 
-      status: 'Rejected', 
-      numReports: 4, 
-      comments: [
-        { date: '23-04-24 11:20', user: '@reporter12', message: 'Sensitive content' },
-      ]
-    },
-    { 
-      id: 12, 
-      user: '@tony_stark', 
-      type: 'Video', 
-      content: 'Iron Man tech showcase...', 
-      status: 'Rejected', 
-      numReports: 5, 
-      comments: [
-        { date: '24-04-24 09:45', user: '@reporter13', message: 'Misleading claims' },
-      ]
-    }
-    // Add additional reports as needed...
-  ]);
+  // State to manage original and filtered content
+  const [originalContent, setOriginalContent] = useState([]);
+  const [filteredContent, setFilteredContent] = useState([]);
+  const [approvedContent, setApprovedContent] = useState([]);
+  const [rejectedContent, setRejectedContent] = useState([]);
+
+  // Fetch reports from Firestore (real-time updates included)
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, "reports"), (snapshot) => {
+      const reportsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
   
+      setOriginalContent(reportsData);
 
-  // Filtering content for tables
-  const filteredContent = originalContent.filter(item => {
-    const isPending = item.status === 'Pending';
-    const statusMatch = statusFilter === 'All' || item.status === statusFilter;
-    const contentTypeMatch = contentTypeFilter === 'All' || item.type.toLowerCase() === contentTypeFilter.toLowerCase().trim();
-    return isPending && statusMatch && contentTypeMatch;
-  });  
-
-  const approvedContent = originalContent.filter(item => item.status === 'Approved');
-  const rejectedContent = originalContent.filter(item => item.status === 'Rejected');
+      // Apply filters for pending, approved, and rejected reports
+      setFilteredContent(reportsData.filter(item => item.status === 'Pending'));
+      setApprovedContent(reportsData.filter(item => item.status === 'Approved'));
+      setRejectedContent(reportsData.filter(item => item.status === 'Rejected'));
+    });
+  
+    return () => unsubscribe(); // Cleanup the listener on unmount
+  }, []);
 
   // Function to handle opening the modal
   const handleShowModal = (report) => {
@@ -182,13 +59,12 @@ const ModerationDashboard = () => {
     setShowModal(true);
     setViewOnlyMode(report.status === 'Approved' || report.status === 'Rejected');  // Enable view-only mode for closed reports
     setRejectReason('');
+
+    // Fetch the public URL for the image if the content type is Image
     if (report.type === "Image") {
-      // Fetch the public URL for the image
       const storageRef = ref(storage, report.content);
       getDownloadURL(storageRef)
-        .then((url) => {
-          setImageUrl(url);
-        })
+        .then((url) => setImageUrl(url))
         .catch((error) => {
           console.error("Error fetching image URL:", error);
           setImageUrl('');
@@ -208,24 +84,15 @@ const ModerationDashboard = () => {
 
   // Function to handle approve/reject actions
   const handleModerationAction = (id, action) => {
-    if (action === 'reject') {
-      // Make sure a reason is selected before rejecting
-      if (!rejectReason) {
-        alert('Please select a reason for rejection.');
-        return;
-      }
-      console.log(`Rejected for reason: ${rejectReason}`);
+    if (action === 'reject' && !rejectReason) {
+      alert('Please select a reason for rejection.');
+      return;
     }
   
     setOriginalContent(prevContent => 
       prevContent.map(item => {
         if (item.id === id) {
-          if (action === 'approve') {
-            console.log(`${item.user} report has been accepted`);
-            return { ...item, status: 'Approved' };
-          } else if (action === 'reject') {
-            return { ...item, status: 'Rejected' };
-          }
+          return { ...item, status: action === 'approve' ? 'Approved' : 'Rejected' };
         }
         return item;
       })
@@ -234,10 +101,8 @@ const ModerationDashboard = () => {
     handleCloseModal(); // Close the modal after taking action
   };
 
-  // Function to handle filter application
+  // Function to handle filter application (Optional: Extend as needed)
   const handleApplyFilters = () => {
-    // This function currently doesn't need to do much as the filter is applied via state,
-    // but it's defined here to prevent errors and can be extended if needed.
     console.log('Filters applied:', { statusFilter, contentTypeFilter });
   };
 
@@ -272,7 +137,6 @@ const ModerationDashboard = () => {
               <Card.Header>Filters</Card.Header>
               <Card.Body>
                 <Form onSubmit={(e) => e.preventDefault()}>
-
                   {/* Filters to filter reports by */}
                   <Form.Group className="mb-3">
                     <Form.Label>Content Type</Form.Label>
@@ -368,10 +232,9 @@ const ModerationDashboard = () => {
                           item.content.length > 50 ? `${item.content.substring(0, 50)}...` : item.content}
                         </td>
                         <td>
-                          {/* Render status as a button */}
                           <Button 
-                            variant="success"  // Green button for approved status
-                            onClick={() => handleShowModal(item)}  // Open modal when clicked
+                            variant="success"
+                            onClick={() => handleShowModal(item)}
                           >
                             {item.status}
                           </Button>
@@ -412,10 +275,9 @@ const ModerationDashboard = () => {
                           item.content.length > 50 ? `${item.content.substring(0, 50)}...` : item.content}
                         </td>
                         <td>
-                          {/* Render status as a button */}
                           <Button 
-                            variant={item.status === 'Approved' ? 'success' : 'danger'}
-                            onClick={() => handleShowModal(item)}  // Open modal when clicked
+                            variant="danger"
+                            onClick={() => handleShowModal(item)}
                           >
                             {item.status}
                           </Button>
@@ -484,7 +346,6 @@ const ModerationDashboard = () => {
         {selectedReport && (
           <>
             {!viewOnlyMode ? (
-              // Show Approve and Reject buttons if it's not view-only mode
               <>
                 <Button variant="success" onClick={() => handleModerationAction(selectedReport.id, 'approve')}>
                   Approve
@@ -514,7 +375,6 @@ const ModerationDashboard = () => {
                 </Button>
               </>
             ) : (
-              // Show only the Close button in view-only mode
               <Button variant="secondary" onClick={handleCloseModal}>
                 Close
               </Button>
@@ -523,12 +383,8 @@ const ModerationDashboard = () => {
         )}
       </Modal.Footer>
     </Modal>
-
-
     </>
   );
-
-
 };
 
 export default ModerationDashboard;
