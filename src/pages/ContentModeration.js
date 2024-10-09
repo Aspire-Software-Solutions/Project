@@ -5,7 +5,7 @@ import { Container, Row, Col, Card, Button,
   } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
-import { collection, onSnapshot, doc, updateDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from '../firebase'; // Ensure this is your Firebase configuration file
 
 const ModerationDashboard = () => {
@@ -96,35 +96,35 @@ const ModerationDashboard = () => {
   
 
   // Function to handle approve/reject actions
-  const handleModerationAction = async (id, action) => {
-    if (action === 'reject' && !rejectReason) {
-      alert('Please select a reason for rejection.');
-      return;
-    }
+  const handleModerationAction = async (action) => {
+    const reportId = selectedReport.id; // This is the Firestore document ID (in this case, "EXAMPLE")
 
-    // Update local state (for immediate UI update)
-    setOriginalContent(prevContent => 
-      prevContent.map(item => {
-        if (item.id === id) {
-          return { ...item, status: action === 'approve' ? 'Approved' : 'Rejected' };
-        }
-        return item;
-      })
-    );
-
-    // Update Firestore with the new status
     try {
-      const reportRef = doc(db, "reports", id);
-      await updateDoc(reportRef, {
-        status: action === 'approve' ? 'Approved' : 'Rejected'
-      });
-      console.log(`Report ${id} has been ${action === 'approve' ? 'approved' : 'rejected'}`);
-    } catch (error) {
-      console.error("Error updating document:", error);
-    }
+        // Reference to the Firestore document
+        const reportRef = doc(db, "reports", reportId); // Use the document's ID from Firestore
+        
+        // Update the status (either 'Approved' or 'Rejected')
+        await updateDoc(reportRef, {
+            status: action === 'approve' ? 'Approved' : 'Rejected'
+        });
 
-    handleCloseModal(); // Close the modal after taking action
+        // Update status locally (for UI purposes)
+        setOriginalContent(prevContent => 
+            prevContent.map(item => {
+                if (item.id === reportId) {
+                    return { ...item, status: action === 'approve' ? 'Approved' : 'Rejected' };
+                }
+                return item;
+            })
+        );
+
+        handleCloseModal(); // Close the modal after updating the document
+
+    } catch (error) {
+        console.error("Error updating document:", error);
+    }
   };
+
 
   return (
     <>
