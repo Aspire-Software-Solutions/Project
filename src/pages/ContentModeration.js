@@ -327,11 +327,24 @@ const ModerationDashboard = () => {
             <div>
               <strong>Comments: </strong>
               {selectedReport.comments && selectedReport.comments.length > 0 ? (
-                selectedReport.comments.map((comment, index) => (
-                  <div key={index}>
-                    {`${comment.date} - ${comment.user}: ${comment.message}`}
-                  </div>
-                ))
+                selectedReport.comments.map((comment, index) => {
+                  // Convert Firestore timestamp to JavaScript Date object
+                  const timestamp = new Date(comment.date.seconds * 1000 + comment.date.nanoseconds / 1000000);
+                  const formattedDate = timestamp.toLocaleString('en-GB', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false,
+                  });
+
+                  return (
+                    <div key={index}>
+                      {`${formattedDate} - ${comment.user}: ${comment.message}`}
+                    </div>
+                  );
+                })
               ) : (
                 <div>No comments available.</div>
               )}

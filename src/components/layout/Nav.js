@@ -101,19 +101,20 @@ const Nav = () => {
   const auth = getAuth();
   const user = auth.currentUser; // Get the currently logged-in user
   const [handle, setHandle] = useState(null); // Store the handle
+  const [isAdmin, setIsAdmin] = useState(false); // Store isAdmin state
   const db = getFirestore(); // Initialize Firestore
 
-  // FOR TESTING PURPOSES, SET TRUE FOR EVERYONE
-  const isAdmin = true;
 
   useEffect(() => {
-    const fetchHandle = async () => {
+    const fetchProfile = async () => {
       if (user) {
         try {
           const profileRef = doc(db, "profiles", user.uid);
           const profileSnap = await getDoc(profileRef);
           if (profileSnap.exists()) {
-            setHandle(profileSnap.data().handle);
+            const profileData = profileSnap.data();
+            setHandle(profileData.handle);
+            setIsAdmin(profileData.isAdmin || false); // Set isAdmin if available
           } else {
             console.log("No profile found!");
           }
@@ -122,7 +123,7 @@ const Nav = () => {
         }
       }
     };
-    fetchHandle();
+    fetchProfile();
   }, [user, db]);
   
 
