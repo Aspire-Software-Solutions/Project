@@ -8,7 +8,18 @@ import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { collection, onSnapshot, doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from '../firebase'; // Ensure this is your Firebase configuration file
 
-const ModerationDashboard = () => {
+const ModerationDashboard = ({ user }) => {
+
+  // Admin access check
+  const checkAdminAccess = (user) => {
+    // Ensure user object exists and check isAdmin property
+    return user?.isAdmin ?? false;
+  };
+
+  // Run access check before any content renders
+  if (!checkAdminAccess(user)) {
+    return <h1>ACCESS DENIED</h1>;
+  }
 
   // Init storage (needed for handling images and videos)
   const storage = getStorage();
